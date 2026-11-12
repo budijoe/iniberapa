@@ -146,8 +146,7 @@
             background: white;
             border: 2px solid #cbd5e0;
             border-radius: 10px;
-            padding: 10px 2px;
-            font-size: 0.8rem;
+            padding: 14px 4px;
             font-weight: 700;
             color: var(--color-dark);
             cursor: pointer;
@@ -157,6 +156,17 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 4px;
+        }
+
+        .wind-btn .wind-char {
+            font-size: 1.85rem;
+            line-height: 1.1;
+        }
+
+        .wind-btn .wind-sub {
+            font-size: 0.78rem;
+            font-weight: 700;
         }
 
         .wind-btn.selected {
@@ -1092,21 +1102,23 @@
 
     function renderPage1(content, footer) {
         const winds = [
-            { val: 1, label: '東 (East)' },
-            { val: 2, label: '南 (South)' },
-            { val: 3, label: '西 (West)' },
-            { val: 4, label: '北 (North)' }
+            { val: 1, char: '東', sub: '(East)' },
+            { val: 2, char: '南', sub: '(South)' },
+            { val: 3, char: '西', sub: '(West)' },
+            { val: 4, char: '北', sub: '(North)' }
         ];
 
         let seatBtnsHtml = winds.map(w => `
             <button class="wind-btn ${state.seatWind === w.val ? 'selected' : ''}" onclick="setSeatWind(${w.val})">
-                ${w.label}
+                <span class="wind-char">${w.char}</span>
+                <span class="wind-sub">${w.sub}</span>
             </button>
         `).join('');
 
         let prevalentBtnsHtml = winds.map(w => `
             <button class="wind-btn ${state.prevalentWind === w.val ? 'selected' : ''}" onclick="setPrevalentWind(${w.val})">
-                ${w.label}
+                <span class="wind-char">${w.char}</span>
+                <span class="wind-sub">${w.sub}</span>
             </button>
         `).join('');
 
