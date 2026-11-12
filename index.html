@@ -696,6 +696,112 @@
             color: var(--color-red);
         }
 
+        /* Custom Confirmation Modal */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(26, 32, 44, 0.65);
+            backdrop-filter: blur(2px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 50;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 330px;
+            background-color: var(--bg-color);
+            border: 2px solid var(--color-red);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.35);
+            animation: popIn 0.18s ease-out;
+        }
+
+        .modal-header-warn {
+            background-color: var(--color-red);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-bottom: 3px solid var(--color-yellow);
+        }
+
+        .modal-header-warn h2 {
+            font-size: 0.98rem;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+        }
+
+        .modal-body {
+            padding: 18px 16px 14px 16px;
+            text-align: center;
+        }
+
+        .modal-warn-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background-color: #fff5f5;
+            border: 2px solid #feb2b2;
+            color: var(--color-red);
+            font-size: 1.45rem;
+            margin-bottom: 10px;
+        }
+
+        .modal-body p {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-dark);
+            line-height: 1.45;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            padding: 0 16px 16px 16px;
+        }
+
+        .modal-actions .btn {
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            border-radius: 10px;
+        }
+
+        .btn-modal-cancel {
+            background-color: #ffffff;
+            color: var(--color-dark);
+            border: 1.5px solid #cbd5e0;
+        }
+
+        .btn-modal-confirm {
+            background-color: var(--color-red);
+            color: white;
+            box-shadow: 0 2px 6px rgba(197, 48, 48, 0.35);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
         /* Floating Info Toast */
         .toast-msg {
             position: fixed;
@@ -727,6 +833,24 @@
     <footer id="appFooter">
         <!-- Nav buttons rendered dynamically -->
     </footer>
+
+    <!-- Custom Reset Confirmation Modal -->
+    <div id="resetModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle" onclick="handleModalBackdropClick(event)">
+        <div class="modal-card">
+            <div class="modal-header-warn">
+                <span>⚠️</span>
+                <h2 id="resetModalTitle">Ulangi Dari Awal</h2>
+            </div>
+            <div class="modal-body">
+                <div class="modal-warn-badge">🔄</div>
+                <p>Hapus semua data dan mulai lagi dari awal?</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-modal-cancel" onclick="closeResetModal()">Tidak</button>
+                <button type="button" class="btn btn-modal-confirm" onclick="confirmResetAction()">Ya</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="toastMsg" class="toast-msg"></div>
@@ -873,10 +997,29 @@
         if (contentEl) contentEl.scrollTop = 0;
     }
 
-    function confirmResetAll() {
-        if (window.confirm('Apakah Anda yakin ingin mengulang dan menghapus semua data input?')) {
-            resetAll();
+    function openResetModal() {
+        const modal = document.getElementById('resetModal');
+        if (modal) {
+            modal.classList.add('active');
         }
+    }
+
+    function closeResetModal() {
+        const modal = document.getElementById('resetModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+
+    function handleModalBackdropClick(event) {
+        if (event.target && event.target.id === 'resetModal') {
+            closeResetModal();
+        }
+    }
+
+    function confirmResetAction() {
+        closeResetModal();
+        resetAll();
     }
 
     function resetAll() {
@@ -1420,7 +1563,7 @@
         // Susunan footer halaman hasil: Tombol KEMBALI di paling kiri, SALIN di paling kanan
         footer.innerHTML = `
             <button class="btn btn-back" onclick="navigateTo(5)">⬅️ Kembali</button>
-            <button class="btn btn-danger" onclick="confirmResetAll()">🔄 Ulang</button>
+            <button class="btn btn-danger" onclick="openResetModal()">🔄 Ulang</button>
             <button class="btn btn-next" onclick="copyToClipboard(${evaluation.totalScore})">📋 Salin</button>
         `;
     }
