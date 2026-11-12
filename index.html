@@ -1123,8 +1123,8 @@
         `).join('');
 
         content.innerHTML = `
-            <div class="page-title">1. Angin Duduk & Angin Ronde</div>
-            <div class="page-subtitle">Pilih posisi Angin Duduk (Seat Wind) dan Angin Ronde (Prevalent Wind) Pemenang:</div>
+            <div class="page-title">1. Angin Duduk & Angin Meja</div>
+            <div class="page-subtitle">Pilih posisi Angin Duduk (Seat Wind) dan Angin Meja (Prevalent Wind) Pemenang:</div>
             
             <div class="form-group">
                 <label>Angin Duduk (Seat Wind):</label>
@@ -1132,7 +1132,7 @@
             </div>
 
             <div class="form-group" style="margin-top: 14px;">
-                <label>Angin Ronde (Prevalent Wind):</label>
+                <label>Angin Meja (Prevalent Wind):</label>
                 <div class="wind-grid">${prevalentBtnsHtml}</div>
             </div>
         `;
@@ -1563,7 +1563,7 @@
 
             <div class="wind-info-banner">
                 <div>Angin Duduk: <span>${seatWindLabel}</span></div>
-                <div>Angin Ronde: <span>${prevalentWindLabel}</span></div>
+                <div>Angin Meja: <span>${prevalentWindLabel}</span></div>
             </div>
 
             <div class="result-visual-box">
@@ -2061,7 +2061,7 @@
         let hasPrevalentTriplet = state.handMode === 'standard' && state.standardMelds.slice(0, 4).some(m => isTripletSet(m.tiles) && getMeldTargetTile(m.tiles) === prevalentWindTile);
         if ((prevalentCount >= 3 || hasPrevalentTriplet) && seatWindTile !== prevalentWindTile) {
             totalScore += 1;
-            items.push({ title: 'Pung Angin Ronde (Prevalent Wind)', pts: 1 });
+            items.push({ title: 'Pung Angin Meja (Prevalent Wind)', pts: 1 });
         }
 
         const orphanTileIds = ['1_wan', '9_wan', '1_sok', '9_sok', '1_tong', '9_tong', 'tung', 'nan', 'si', 'pei', 'cung', 'fat', 'pai'];
