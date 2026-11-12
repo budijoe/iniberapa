@@ -107,7 +107,7 @@
             margin-bottom: 8px;
         }
 
-        /* Sticky Header for Result Page (Includes title, total score, and wind banner) */
+        /* Sticky Header for Result Page */
         .sticky-result-header {
             position: sticky;
             top: 0;
@@ -181,7 +181,11 @@
         }
 
         .option-card input[type="radio"] {
-            width: auto;
+            width: 16px;
+            height: 16px;
+            min-width: 16px;
+            min-height: 16px;
+            flex-shrink: 0;
             margin-right: 10px;
             accent-color: var(--color-green);
         }
@@ -869,6 +873,12 @@
         if (contentEl) contentEl.scrollTop = 0;
     }
 
+    function confirmResetAll() {
+        if (window.confirm('Apakah Anda yakin ingin mengulang dan menghapus semua data input?')) {
+            resetAll();
+        }
+    }
+
     function resetAll() {
         localStorage.removeItem('ydsp_app_state');
         state = {
@@ -1410,7 +1420,7 @@
         // Susunan footer halaman hasil: Tombol KEMBALI di paling kiri, SALIN di paling kanan
         footer.innerHTML = `
             <button class="btn btn-back" onclick="navigateTo(5)">⬅️ Kembali</button>
-            <button class="btn btn-danger" onclick="resetAll()">🔄 Ulang</button>
+            <button class="btn btn-danger" onclick="confirmResetAll()">🔄 Ulang</button>
             <button class="btn btn-next" onclick="copyToClipboard(${evaluation.totalScore})">📋 Salin</button>
         `;
     }
@@ -1464,6 +1474,21 @@
         if (nonKim.length <= 1) return true;
         if (nonKim.length === 2) return nonKim[0] === nonKim[1];
         return nonKim[0] === nonKim[1] && nonKim[1] === nonKim[2];
+    }
+
+    function isPairSet(tiles) {
+        if (!tiles || tiles.length !== 2 || tiles.includes(null)) return false;
+        let nonKim = tiles.filter(t => t !== 'kim');
+        if (nonKim.length <= 1) return true;
+        return nonKim[0] === nonKim[1];
+    }
+
+    function getMeldTargetTile(tiles) {
+        if (!tiles || tiles.includes(null)) return null;
+        let nonKim = tiles.filter(t => t !== 'kim');
+        if (nonKim.length === 0) return 'kim';
+        const first = nonKim[0];
+        return nonKim.every(t => t === first) ? first : null;
     }
 
     function getTileType(tId) {
@@ -1731,6 +1756,58 @@
                     items.push({ title: 'Ping Hu (All Chows)', pts: 3 });
                 }
             }
+
+            // Pemeriksaan Kartu Naga (Siau San Yen & Ta San Yen) dan Kartu Angin (Siau Se Si & Ta Se Si)
+            const dragonIds = ['cung', 'fat', 'pai'];
+            const windIds = ['tung', 'nan', 'si', 'pei'];
+
+            let tripletTargets = new Set();
+            for (let i = 0; i < 4; i++) {
+                const meld = state.standardMelds[i];
+                if (isTripletSet(meld.tiles)) {
+                    const target = getMeldTargetTile(meld.tiles);
+                    if (target && target !== 'kim') {
+                        tripletTargets.add(target);
+                    }
+                }
+            }
+
+            let pairTarget = null;
+            const pairTiles = state.standardMelds[4].tiles;
+            if (isPairSet(pairTiles)) {
+                const target = getMeldTargetTile(pairTiles);
+                if (target && target !== 'kim') {
+                    pairTarget = target;
+                }
+            }
+
+            // Pemeriksaan Kartu Naga
+            let dragonTripletCount = dragonIds.filter(d => tripletTargets.has(d)).length;
+            let dragonHasPair = pairTarget && dragonIds.includes(pairTarget) && !tripletTargets.has(pairTarget);
+
+            if (dragonTripletCount === 3) {
+                let pts = hasKim ? 30 : 40;
+                totalScore += pts;
+                items.push({ title: `Ta San Yen (Big Three Dragons) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            } else if (dragonTripletCount === 2 && dragonHasPair) {
+                let pts = hasKim ? 10 : 20;
+                totalScore += pts;
+                items.push({ title: `Siau San Yen (Small Three Dragons) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+
+            // Pemeriksaan Kartu Angin
+            let windTripletCount = windIds.filter(w => tripletTargets.has(w)).length;
+            let windHasPair = pairTarget && windIds.includes(pairTarget) && !tripletTargets.has(pairTarget);
+
+            if (windTripletCount === 4) {
+                let pts = hasKim ? 50 : 60;
+                totalScore += pts;
+                items.push({ title: `Ta Se Si (Big Four Winds) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            } else if (windTripletCount === 3 && windHasPair) {
+                let pts = hasKim ? 30 : 40;
+                totalScore += pts;
+                items.push({ title: `Siau Se Si (Small Four Winds) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
         }
 
         if (state.handMode === 'seven_pairs') {
@@ -1801,7 +1878,8 @@
 
         ['cung', 'fat', 'pai'].forEach(d => {
             let cnt = allTiles.filter(t => t === d).length;
-            if (cnt >= 3) {
+            let hasMeldTriplet = state.handMode === 'standard' && state.standardMelds.slice(0, 4).some(m => isTripletSet(m.tiles) && getMeldTargetTile(m.tiles) === d);
+            if (cnt >= 3 || hasMeldTriplet) {
                 let pts = d === 'cung' ? 2 : 1;
                 let name = d === 'cung' ? 'Naga Merah (Cung)' : d === 'fat' ? 'Naga Hijau (Fat)' : 'Naga Putih (Pai)';
                 totalScore += pts;
@@ -1814,13 +1892,15 @@
         let prevalentWindTile = windMap[state.prevalentWind];
 
         let seatCount = allTiles.filter(t => t === seatWindTile).length;
-        if (seatCount >= 3) {
+        let hasSeatTriplet = state.handMode === 'standard' && state.standardMelds.slice(0, 4).some(m => isTripletSet(m.tiles) && getMeldTargetTile(m.tiles) === seatWindTile);
+        if (seatCount >= 3 || hasSeatTriplet) {
             totalScore += 1;
             items.push({ title: 'Pung Angin Duduk (Seat Wind)', pts: 1 });
         }
 
         let prevalentCount = allTiles.filter(t => t === prevalentWindTile).length;
-        if (prevalentCount >= 3 && seatWindTile !== prevalentWindTile) {
+        let hasPrevalentTriplet = state.handMode === 'standard' && state.standardMelds.slice(0, 4).some(m => isTripletSet(m.tiles) && getMeldTargetTile(m.tiles) === prevalentWindTile);
+        if ((prevalentCount >= 3 || hasPrevalentTriplet) && seatWindTile !== prevalentWindTile) {
             totalScore += 1;
             items.push({ title: 'Pung Angin Ronde (Prevalent Wind)', pts: 1 });
         }
