@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Budi, Ini Berapa?</title>
+    <link rel="canonical" href="https://budijoe.github.io/iniberapa/" />
+    <link rel="manifest" href="/iniberapa/manifest.webmanifest">
+    <style>
+        :root {
+            --bg-color: #F9F5F1;
+            --color-green: #084413;
+            --color-green-light: #f0fff4;
+            --color-red: #c53030;
+            --color-yellow: #d69d2e;
+            --color-dark: #1a202c;
+            --color-gray: #e2e8f0;
+            --color-card: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #2d3748;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--color-dark);
+        }
+
+        /* Phone Screen Frame */
+        .phone-container {
+            width: 100%;
+            max-width: 440px;
+            height: 100vh;
+            max-height: 900px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 480px) {
+            .phone-container {
+                height: 94vh;
+                border-radius: 28px;
+                border: 8px solid #1a202c;
+            }
+        }
+
+        /* App Header */
+        header {
+            background-color: var(--color-green);
+            color: white;
+            padding: 14px 16px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            font-size: 0.7rem;
+            color: var(--color-yellow);
+            margin-top: 2px;
+        }
+
+        /* Main View Container */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Page Titles */
+        .page-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--color-green);
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid var(--color-yellow);
+        }
+
+        .page-subtitle {
+            font-size: 0.78rem;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        /* Sticky Header for Result Page */
+        .sticky-result-header {
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-color);
+            padding-top: 4px;
+            padding-bottom: 8px;
+            z-index: 20;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 10px;
+        }
+
+        /* Form Controls & Wind Buttons */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--color-dark);
+        }
+
+        .wind-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .wind-btn {
+            background: white;
+            border: 2px solid #cbd5e0;
+            border-radius: 10px;
+            padding: 10px 2px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--color-dark);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wind-btn.selected {
+            border-color: var(--color-green);
+            background-color: var(--color-green-light);
+            color: var(--color-green);
+            box-shadow: 0 0 0 1px var(--color-green);
+        }
+
+        /* Radio Options Card */
+        .option-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 9px 12px;
+            margin-bottom: 7px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .option-card.selected {
+            border-color: var(--color-green);
+            background-color: var(--color-green-light);
+        }
+
+        .option-card input[type="radio"] {
+            width: auto;
+            margin-right: 10px;
+            accent-color: var(--color-green);
+        }
+
+        .option-card .label-text {
+            font-size: 0.83rem;
+            font-weight: 600;
+        }
+
+        /* Grid Selection for Flowers */
+        .flower-section-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--color-green);
+            margin-top: 8px;
+            margin-bottom: 6px;
+        }
+
+        .flower-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .tile-card {
+            background: white;
+            border: 2px solid #cbd5e0;
+            border-radius: 10px;
+            padding: 5px 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .tile-card.selected {
+            border-color: var(--color-red);
+            background-color: #fff5f5;
+            box-shadow: 0 0 0 2px var(--color-red);
+        }
+
+        .tile-card img {
+            width: 32px;
+            height: 44px;
+            object-fit: contain;
+        }
+
+        .tile-card .tile-name {
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-top: 3px;
+            text-align: center;
+        }
+
+        /* Hand Input Tabs / Structure */
+        .tab-toggle {
+            display: flex;
+            background: #edf2f7;
+            padding: 3px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 6px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--color-green);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Standard 2-Column Grid Layout for Sets (Rule 2) */
+        .standard-sets-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .meld-box {
+            background: white;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            padding: 8px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .meld-box.pair-box {
+            grid-column: span 2;
+        }
+
+        .meld-main-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .meld-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--color-green);
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        /* Seven Pairs Layout (Rule 1): Pair 1-4 top row grid, Pair 5-7 bottom */
+        .seven-pairs-grid-top {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .seven-pairs-grid-bottom {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 6px;
+            max-width: 78%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .open-toggle {
+            width: 100%;
+            height: 26px;
+            margin-top: 4px;
+            padding: 2px 6px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .open-toggle.closed {
+            background-color: #f0fff4;
+            color: #276749;
+            border: 1.5px solid #9ae6b4;
+        }
+
+        .open-toggle.open {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            border: 1.5px solid #90cdf4;
+        }
+
+        .open-toggle:active {
+            transform: scale(0.96);
+        }
+
+        .tile-slot-container {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+        }
+
+        .tile-slot {
+            width: 30px;
+            height: 40px;
+            border: 1.5px dashed #cbd5e0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #fafafa;
+        }
+
+        .tile-slot.filled {
+            border-style: solid;
+            border-color: #a0aec0;
+            background: white;
+        }
+
+        .tile-slot.selected {
+            border-color: var(--color-red);
+            box-shadow: 0 0 0 2px var(--color-red);
+            background-color: #fff5f5;
+        }
+
+        .tile-slot img {
+            width: 24px;
+            height: 34px;
+            object-fit: contain;
+        }
+
+        /* Action Toolbar above Tile Picker */
+        .toolbar-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            margin-bottom: 4px;
+        }
+
+        .btn-clear-all {
+            background-color: var(--color-red);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-clear-all:active {
+            opacity: 0.85;
+        }
+
+        /* 9x4 GRID TILE PICKER */
+        .picker-grid-9x4 {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 3px;
+            background: white;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .picker-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 1px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #ffffff;
+            transition: transform 0.1s, border-color 0.15s;
+            height: 38px;
+        }
+
+        .picker-item:active {
+            transform: scale(0.92);
+        }
+
+        .picker-item.span-2 {
+            grid-column: span 2;
+            background: #fffdf5;
+            border-color: #d69d2e;
+        }
+
+        .picker-item img {
+            width: 100%;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        /* Result Information Box (Wind Badges) */
+        .wind-info-banner {
+            background: #edf2f7;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--color-dark);
+            text-align: center;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .wind-info-banner span {
+            color: var(--color-green);
+        }
+
+        /* Visual Hand Display in Result Page */
+        .result-visual-box {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #cbd5e0;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+
+        .visual-section-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--color-green);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .visual-flowers-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .visual-flower-card {
+            background: #fffdf5;
+            border: 1px solid #d69d2e;
+            border-radius: 6px;
+            padding: 3px 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.68rem;
+            font-weight: 600;
+        }
+
+        .visual-flower-card img {
+            width: 20px;
+            height: 28px;
+            object-fit: contain;
+        }
+
+        .visual-sets-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        .visual-set-group {
+            background: #f8fafc;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            padding: 6px 6px 4px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .set-status-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .set-status-badge.open {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            border: 1px solid #90cdf4;
+        }
+
+        .set-status-badge.closed {
+            background-color: #f0fff4;
+            color: #276749;
+            border: 1px solid #9ae6b4;
+        }
+
+        .visual-tiles-row {
+            display: flex;
+            gap: 3px;
+        }
+
+        .visual-tile-img {
+            width: 26px;
+            height: 36px;
+            object-fit: contain;
+            background: white;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            padding: 1px;
+        }
+
+        .visual-tile-img.kim-highlight {
+            border: 2px solid var(--color-red);
+            box-shadow: 0 0 5px rgba(197, 48, 48, 0.5);
+        }
+
+        /* Navigation Footer */
+        footer {
+            background-color: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 10px 16px calc(56px + env(safe-area-inset-bottom, 0px));
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 8px;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        footer > .btn {
+            flex: none;
+            width: 100%;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 11px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.83rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: opacity 0.15s;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+        }
+
+        .btn-back {
+            background-color: #edf2f7;
+            color: var(--color-dark);
+        }
+
+        .btn-next {
+            background-color: var(--color-green);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--color-red);
+            color: white;
+        }
+
+        .btn-yellow {
+            background-color: var(--color-yellow);
+            color: white;
+        }
+
+        /* Result Breakdown */
+        .score-box {
+            background: var(--color-green);
+            color: white;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .score-box .score-val {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--color-yellow);
+        }
+
+        .breakdown-list {
+            background: white;
+            border-radius: 12px;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 12px;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            padding: 6px 0;
+            border-bottom: 1px dashed #edf2f7;
+        }
+
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-item .pts {
+            font-weight: 700;
+            color: var(--color-green);
+        }
+
+        .breakdown-item.batal .pts {
+            color: var(--color-red);
+        }
+
+        /* Floating Info Toast */
+        .toast-msg {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            z-index: 100;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+    <header>
+        <h1>🀄 BUDI, INI BERAPA?</h1>
+        <p>Aplikasi Otomatis untuk Menghitung Nilai Mahjong dengan Sistem Bandung YDSP — by budijoe</p>
+    </header>
+
+    <main class="content" id="appContent">
+        <!-- Rendered dynamically -->
+    </main>
+
+    <footer id="appFooter">
+        <!-- Nav buttons rendered dynamically -->
+    </footer>
+</div>
+
+<div id="toastMsg" class="toast-msg"></div>
+
+<script>
+    const SVG_MASTER = "https://raw.githubusercontent.com/budijoe/skor-mahjong/main/";
+
+        const flowerTiles = [
+            { id: 'f_red_1', name: '1 Merah', code: 'red1', img: SVG_MASTER + 'svg/35-spring.svg' },
+            { id: 'f_red_2', name: '2 Merah', code: 'red2', img: SVG_MASTER + 'svg/36-summer.svg' },
+            { id: 'f_red_3', name: '3 Merah', code: 'red3', img: SVG_MASTER + 'svg/37-autumn.svg' },
+            { id: 'f_red_4', name: '4 Merah', code: 'red4', img: SVG_MASTER + 'svg/38-winter.svg' },
+            { id: 'f_black_1', name: '1 Hitam', code: 'black1', img: SVG_MASTER + 'svg/39-plum.svg' },
+            { id: 'f_black_2', name: '2 Hitam', code: 'black2', img: SVG_MASTER + 'svg/40-orchid.svg' },
+            { id: 'f_black_3', name: '3 Hitam', code: 'black3', img: SVG_MASTER + 'svg/41-chrysanthemum.svg' },
+            { id: 'f_black_4', name: '4 Hitam', code: 'black4', img: SVG_MASTER + 'svg/42-bamboo.svg' }
+        ];
+
+        const standardTiles = [
+            { id: '1_wan', label: '1 Wan', type: 'wan', val: 1, img: SVG_MASTER + 'svg/08-characters-1.svg' },
+            { id: '2_wan', label: '2 Wan', type: 'wan', val: 2, img: SVG_MASTER + 'svg/09-characters-2.svg' },
+            { id: '3_wan', label: '3 Wan', type: 'wan', val: 3, img: SVG_MASTER + 'svg/10-characters-3.svg' },
+            { id: '4_wan', label: '4 Wan', type: 'wan', val: 4, img: SVG_MASTER + 'svg/11-characters-4.svg' },
+            { id: '5_wan', label: '5 Wan', type: 'wan', val: 5, img: SVG_MASTER + 'svg/12-characters-5.svg' },
+            { id: '6_wan', label: '6 Wan', type: 'wan', val: 6, img: SVG_MASTER + 'svg/13-characters-6.svg' },
+            { id: '7_wan', label: '7 Wan', type: 'wan', val: 7, img: SVG_MASTER + 'svg/14-characters-7.svg' },
+            { id: '8_wan', label: '8 Wan', type: 'wan', val: 8, img: SVG_MASTER + 'svg/15-characters-8.svg' },
+            { id: '9_wan', label: '9 Wan', type: 'wan', val: 9, img: SVG_MASTER + 'svg/16-characters-9.svg' },
+            { id: '1_sok', label: '1 Sok', type: 'sok', val: 1, img: SVG_MASTER + 'svg/26-bamboos-1.svg' },
+            { id: '2_sok', label: '2 Sok', type: 'sok', val: 2, img: SVG_MASTER + 'svg/27-bamboos-2.svg' },
+            { id: '3_sok', label: '3 Sok', type: 'sok', val: 3, img: SVG_MASTER + 'svg/28-bamboos-3.svg' },
+            { id: '4_sok', label: '4 Sok', type: 'sok', val: 4, img: SVG_MASTER + 'svg/29-bamboos-4.svg' },
+            { id: '5_sok', label: '5 Sok', type: 'sok', val: 5, img: SVG_MASTER + 'svg/30-bamboos-5.svg' },
+            { id: '6_sok', label: '6 Sok', type: 'sok', val: 6, img: SVG_MASTER + 'svg/31-bamboos-6.svg' },
+            { id: '7_sok', label: '7 Sok', type: 'sok', val: 7, img: SVG_MASTER + 'svg/32-bamboos-7.svg' },
+            { id: '8_sok', label: '8 Sok', type: 'sok', val: 8, img: SVG_MASTER + 'svg/33-bamboos-8.svg' },
+            { id: '9_sok', label: '9 Sok', type: 'sok', val: 9, img: SVG_MASTER + 'svg/34-bamboos-9.svg' },
+            { id: '1_tong', label: '1 Tong', type: 'tong', val: 1, img: SVG_MASTER + 'svg/17-circles-1-variant-4.svg' },
+            { id: '2_tong', label: '2 Tong', type: 'tong', val: 2, img: SVG_MASTER + 'svg/18-circles-2.svg' },
+            { id: '3_tong', label: '3 Tong', type: 'tong', val: 3, img: SVG_MASTER + 'svg/19-circles-3.svg' },
+            { id: '4_tong', label: '4 Tong', type: 'tong', val: 4, img: SVG_MASTER + 'svg/20-circles-4.svg' },
+            { id: '5_tong', label: '5 Tong', type: 'tong', val: 5, img: SVG_MASTER + 'svg/21-circles-5.svg' },
+            { id: '6_tong', label: '6 Tong', type: 'tong', val: 6, img: SVG_MASTER + 'svg/22-circles-6.svg' },
+            { id: '7_tong', label: '7 Tong', type: 'tong', val: 7, img: SVG_MASTER + 'svg/23-circles-7.svg' },
+            { id: '8_tong', label: '8 Tong', type: 'tong', val: 8, img: SVG_MASTER + 'svg/24-circles-8.svg' },
+            { id: '9_tong', label: '9 Tong', type: 'tong', val: 9, img: SVG_MASTER + 'svg/25-circles-9.svg' },
+            { id: 'cung', label: 'Cung (Red Dragon)', type: 'dragon', val: 'cung', img: SVG_MASTER + 'svg/03-red-dragon.svg' },
+            { id: 'fat', label: 'Fat (Green Dragon)', type: 'dragon', val: 'fat', img: SVG_MASTER + 'svg/02-green-dragon.svg' },
+            { id: 'pai', label: 'Pai (White Dragon)', type: 'dragon', val: 'pai', img: SVG_MASTER + 'svg/01-white-dragon.svg' },
+            { id: 'tung', label: 'Tung (East)', type: 'wind', val: 1, img: SVG_MASTER + 'svg/04-east-wind.svg' },
+            { id: 'nan', label: 'Nan (South)', type: 'wind', val: 2, img: SVG_MASTER + 'svg/05-south-wind.svg' },
+            { id: 'si', label: 'Si (West)', type: 'wind', val: 3, img: SVG_MASTER + 'svg/06-west-wind.svg' },
+            { id: 'pei', label: 'Pei (North)', type: 'wind', val: 4, img: SVG_MASTER + 'svg/07-north-wind.svg' },
+            { id: 'kim', label: 'KIM / Joker', type: 'kim', val: 'kim', img: SVG_MASTER + 'svg/44-joker-clown.svg', span2: true }
+        ];
+
+    const windNamesMap = {
+        1: '東 (East) 1',
+        2: '南 (South) 2',
+        3: '西 (West) 3',
+        4: '北 (North) 4'
+    };
+
+    let state = {
+        currentPage: 1,
+        seatWind: 1,
+        prevalentWind: 1,
+        winWay: 'buangan',
+        selectedFlowers: [],
+        handMode: 'standard',
+        standardMelds: [
+            { tiles: [null, null, null], isOpen: false },
+            { tiles: [null, null, null], isOpen: false },
+            { tiles: [null, null, null], isOpen: false },
+            { tiles: [null, null, null], isOpen: false },
+            { tiles: [null, null], isOpen: false }
+        ],
+        sevenPairs: [
+            [null, null], [null, null], [null, null],
+            [null, null], [null, null], [null, null], [null, null]
+        ],
+        specialHand: 'none'
+    };
+
+    let activeSlotTarget = null;
+
+    function saveState() {
+        localStorage.setItem('ydsp_app_state', JSON.stringify(state));
+    }
+
+    function loadState() {
+        const saved = localStorage.getItem('ydsp_app_state');
+        if (saved) {
+            try {
+                state = Object.assign(state, JSON.parse(saved));
+            } catch(e) {}
+        }
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    }
+
+    function navigateTo(page) {
+        state.currentPage = page;
+        saveState();
+        render();
+        const contentEl = document.getElementById('appContent');
+        if (contentEl) contentEl.scrollTop = 0;
+    }
+
+    function resetAll() {
+        localStorage.removeItem('ydsp_app_state');
+        state = {
+            currentPage: 1,
+            seatWind: 1,
+            prevalentWind: 1,
+            winWay: 'buangan',
+            selectedFlowers: [],
+            handMode: 'standard',
+            standardMelds: [
+                { tiles: [null, null, null], isOpen: false },
+                { tiles: [null, null, null], isOpen: false },
+                { tiles: [null, null, null], isOpen: false },
+                { tiles: [null, null, null], isOpen: false },
+                { tiles: [null, null], isOpen: false }
+            ],
+            sevenPairs: [
+                [null, null], [null, null], [null, null],
+                [null, null], [null, null], [null, null], [null, null]
+            ],
+            specialHand: 'none'
+        };
+        activeSlotTarget = null;
+        navigateTo(1);
+    }
+
+    function clearAllHandSlots() {
+        if (state.handMode === 'standard') {
+            state.standardMelds = [
+                { tiles: [null, null, null], isOpen: false },
+                { tiles: [null, null, null], isOpen: false },
+                { tiles: [null, null, null], isOpen: false },
+                { tiles: [null, null, null], isOpen: false },
+                { tiles: [null, null], isOpen: false }
+            ];
+        } else {
+            state.sevenPairs = [
+                [null, null], [null, null], [null, null],
+                [null, null], [null, null], [null, null], [null, null]
+            ];
+        }
+        activeSlotTarget = { mode: state.handMode, groupIndex: 0, slotIndex: 0 };
+        saveState();
+        render();
+        showToast('Semua slot kartu berhasil dibersihkan');
+    }
+
+    function render() {
+        const content = document.getElementById('appContent');
+        const footer = document.getElementById('appFooter');
+
+        content.innerHTML = '';
+        footer.innerHTML = '';
+
+        switch(state.currentPage) {
+            case 1: renderPage1(content, footer); break;
+            case 2: renderPage2(content, footer); break;
+            case 3: renderPage3(content, footer); break;
+            case 4: renderPage4(content, footer); break;
+            case 5: renderPage5(content, footer); break;
+            case 6: renderPage6(content, footer); break;
+        }
+    }
+
+    function renderPage1(content, footer) {
+        const winds = [
+            { val: 1, label: '東 (East)' },
+            { val: 2, label: '南 (South)' },
+            { val: 3, label: '西 (West)' },
+            { val: 4, label: '北 (North)' }
+        ];
+
+        let seatBtnsHtml = winds.map(w => `
+            <button class="wind-btn ${state.seatWind === w.val ? 'selected' : ''}" onclick="setSeatWind(${w.val})">
+                ${w.label}
+            </button>
+        `).join('');
+
+        let prevalentBtnsHtml = winds.map(w => `
+            <button class="wind-btn ${state.prevalentWind === w.val ? 'selected' : ''}" onclick="setPrevalentWind(${w.val})">
+                ${w.label}
+            </button>
+        `).join('');
+
+        content.innerHTML = `
+            <div class="page-title">1. Angin Duduk & Angin Ronde</div>
+            <div class="page-subtitle">Pilih posisi Angin Duduk (Seat Wind) dan Angin Ronde (Prevalent Wind) Pemenang:</div>
+            
+            <div class="form-group">
+                <label>Angin Duduk (Seat Wind):</label>
+                <div class="wind-grid">${seatBtnsHtml}</div>
+            </div>
+
+            <div class="form-group" style="margin-top: 14px;">
+                <label>Angin Ronde (Prevalent Wind):</label>
+                <div class="wind-grid">${prevalentBtnsHtml}</div>
+            </div>
+        `;
+
+        footer.innerHTML = `<button class="btn btn-next" onclick="navigateTo(2)">Selanjutnya ➡️</button>`;
+    }
+
+    function setSeatWind(val) {
+        state.seatWind = val;
+        saveState();
+        render();
+    }
+
+    function setPrevalentWind(val) {
+        state.prevalentWind = val;
+        saveState();
+        render();
+    }
+
+    function renderPage2(content, footer) {
+        const ways = [
+            { id: 'buangan', label: 'Buangan Orang', desc: 'Menang dari buangan pemain lain' },
+            { id: 'cemo', label: 'Ce Mo (Self-Draw)', desc: 'Menang dengan ambil kartu sendiri dari cangkulan.<br>(+1 Poin)' },
+            { id: 'mun', label: 'Mun (Concealed Hand)', desc: 'Tidak pernah CHOW atau PUNG dari pemain lain kecuali terakhir untuk Hu.<br>(+1 Poin)' },
+            { id: 'cemopu', label: 'Ce Mo Pu Ciu Jen (Fully Concealed)', desc: 'Tertutup dan Self-draw.<br>(+5 Poin)' },
+            { id: 'chiongkong', label: 'Chiong Kong (Robbing the Kong)', desc: 'Merebut kartu yang akan dijadikan Kong oleh pemain lain.<br>(+5 Poin)' },
+            { id: 'kongsong', label: 'Kong Song Hu (Kong Replacement)', desc: 'Hu dari Pengganti Kong.<br>(+5 Poin)' },
+            { id: 'kongkong', label: 'Kong Kong Hu (Double Kong)', desc: 'Hu dari Pengganti Kong yang Kedua kali berturut-turut.<br>(+30 Poin)' }
+        ];
+
+        let optionsHtml = ways.map(w => `
+            <div class="option-card ${state.winWay === w.id ? 'selected' : ''}" onclick="selectWinWay('${w.id}')">
+                <input type="radio" name="winway" ${state.winWay === w.id ? 'checked' : ''}>
+                <div>
+                    <div class="label-text">${w.label}</div>
+                    <div style="font-size:0.7rem; color:#718096;">${w.desc}</div>
+                </div>
+            </div>
+        `).join('');
+
+        content.innerHTML = `
+            <div class="page-title">2. Cara Menang</div>
+            <div class="page-subtitle">Pilih satu cara menang yang didapatkan:</div>
+            ${optionsHtml}
+        `;
+
+        footer.innerHTML = `
+            <button class="btn btn-back" onclick="navigateTo(1)">⬅️ Kembali</button>
+            <button class="btn btn-next" onclick="navigateTo(3)">Selanjutnya ➡️</button>
+        `;
+    }
+
+    function selectWinWay(id) {
+        state.winWay = id;
+        saveState();
+        render();
+    }
+
+    function renderPage3(content, footer) {
+        const redFlowers = flowerTiles.filter(f => f.code.startsWith('red'));
+        const blackFlowers = flowerTiles.filter(f => f.code.startsWith('black'));
+
+        const renderFlowerCards = (list) => list.map(f => {
+            const isSel = state.selectedFlowers.includes(f.id);
+            return `
+                <div class="tile-card ${isSel ? 'selected' : ''}" onclick="toggleFlower('${f.id}')">
+                    <img src="${f.img}" alt="${f.name}">
+                    <div class="tile-name">${f.name}</div>
+                </div>
+            `;
+        }).join('');
+
+        content.innerHTML = `
+            <div class="page-title">3. Kartu Bunga</div>
+            <div class="page-subtitle">Tap kartu bunga yang Anda miliki (bisa lebih dari 1 atau kosongkan jika tidak ada):</div>
+            
+            <div class="flower-section-title">🌹 Bunga Merah</div>
+            <div class="flower-grid-4">${renderFlowerCards(redFlowers)}</div>
+
+            <div class="flower-section-title" style="margin-top: 18px;">🪻 Bunga Hitam</div>
+            <div class="flower-grid-4">${renderFlowerCards(blackFlowers)}</div>
+        `;
+
+        footer.innerHTML = `
+            <button class="btn btn-back" onclick="navigateTo(2)">⬅️ Kembali</button>
+            <button class="btn btn-next" onclick="navigateTo(4)">Selanjutnya ➡️</button>
+        `;
+    }
+
+    function toggleFlower(id) {
+        const idx = state.selectedFlowers.indexOf(id);
+        if (idx > -1) {
+            state.selectedFlowers.splice(idx, 1);
+        } else {
+            state.selectedFlowers.push(id);
+        }
+        saveState();
+        render();
+    }
+
+    function renderPage4(content, footer) {
+        if (!activeSlotTarget) {
+            activeSlotTarget = { mode: state.handMode, groupIndex: 0, slotIndex: 0 };
+        }
+
+        let meldSection = '';
+
+        if (state.handMode === 'standard') {
+            // Standard: 4 Melds + Pair. Melds 0-3 in 2x2 grid, Pair (index 4) full width below.
+            let gridPairsHtml = '';
+            let pairHtml = '';
+
+            for (let i = 0; i < 5; i++) {
+                const isPair = i === 4;
+                const meld = state.standardMelds[i];
+                const slotsCount = isPair ? 2 : 3;
+                let slotsHtml = '';
+
+                for (let s = 0; s < slotsCount; s++) {
+                    const tileId = meld.tiles[s];
+                    const tileObj = standardTiles.find(t => t.id === tileId);
+                    const isTarget = activeSlotTarget && activeSlotTarget.mode === 'standard' && activeSlotTarget.groupIndex === i && activeSlotTarget.slotIndex === s;
+
+                    slotsHtml += `
+                        <div class="tile-slot ${tileObj ? 'filled' : ''} ${isTarget ? 'selected' : ''}" 
+                             onclick="selectSlot('standard', ${i}, ${s})">
+                            ${tileObj ? `<img src="${tileObj.img}" title="${tileObj.label}">` : '+'}
+                        </div>
+                    `;
+                }
+
+                let toggleOpenHtml = '';
+                if (!isPair) {
+                    toggleOpenHtml = `
+                        <button type="button" class="open-toggle ${meld.isOpen ? 'open' : 'closed'}"
+                                aria-pressed="${meld.isOpen ? 'true' : 'false'}"
+                                onclick="toggleMeldOpen(${i}, ${!meld.isOpen})">
+                            ${meld.isOpen ? 'TERBUKA' : 'TERTUTUP'}
+                        </button>
+                    `;
+                }
+
+                const cardHtml = `
+                    <div class="meld-box ${isPair ? 'pair-box' : ''}">
+                        <div class="meld-main-col">
+                            <span class="meld-title">${isPair ? 'Kaki / Ciok (Pair)' : 'Set ' + (i + 1)}</span>
+                            <div class="tile-slot-container">${slotsHtml}</div>
+                        </div>
+                        ${toggleOpenHtml}
+                    </div>
+                `;
+
+                if (isPair) {
+                    pairHtml = cardHtml;
+                } else {
+                    gridPairsHtml += cardHtml;
+                }
+            }
+
+            meldSection = `
+                <div class="standard-sets-grid">${gridPairsHtml}</div>
+                <div>${pairHtml}</div>
+            `;
+        } else {
+            // Seven Pairs: Pair 1-4 top row (4 cols), Pair 5-7 bottom row (3 cols)[cite: 3]
+            let topRowHtml = '';
+            let bottomRowHtml = '';
+
+            for (let i = 0; i < 7; i++) {
+                const pair = state.sevenPairs[i];
+                let slotsHtml = '';
+
+                for (let s = 0; s < 2; s++) {
+                    const tileId = pair[s];
+                    const tileObj = standardTiles.find(t => t.id === tileId);
+                    const isTarget = activeSlotTarget && activeSlotTarget.mode === 'seven' && activeSlotTarget.groupIndex === i && activeSlotTarget.slotIndex === s;
+
+                    slotsHtml += `
+                        <div class="tile-slot ${tileObj ? 'filled' : ''} ${isTarget ? 'selected' : ''}" 
+                             onclick="selectSlot('seven', ${i}, ${s})">
+                            ${tileObj ? `<img src="${tileObj.img}" title="${tileObj.label}">` : '+'}
+                        </div>
+                    `;
+                }
+
+                const pairBoxHtml = `
+                    <div class="meld-box">
+                        <div class="meld-main-col">
+                            <span class="meld-title">Pair ${i + 1}</span>
+                            <div class="tile-slot-container">${slotsHtml}</div>
+                        </div>
+                    </div>
+                `;
+
+                if (i < 4) {
+                    topRowHtml += pairBoxHtml;
+                } else {
+                    bottomRowHtml += pairBoxHtml;
+                }
+            }
+
+            meldSection = `
+                <div class="seven-pairs-grid-top">${topRowHtml}</div>
+                <div class="seven-pairs-grid-bottom">${bottomRowHtml}</div>
+            `;
+        }
+
+        let pickerHtml = standardTiles.map(t => `
+            <div class="picker-item ${t.span2 ? 'span-2' : ''}" onclick="chooseTileForSlot('${t.id}')">
+                <img src="${t.img}" title="${t.label}">
+            </div>
+        `).join('');
+
+        content.innerHTML = `
+            <div class="page-title">4. Masukkan Kartu Pemenang</div>
+            
+            <div class="tab-toggle">
+                <button class="tab-btn ${state.handMode === 'standard' ? 'active' : ''}" onclick="switchHandMode('standard')">Standar (4 Set + Pair)</button>
+                <button class="tab-btn ${state.handMode === 'seven_pairs' ? 'active' : ''}" onclick="switchHandMode('seven_pairs')">Tujuh Pair</button>
+            </div>
+
+            ${meldSection}
+
+            <div class="toolbar-area">
+                <button class="btn-clear-all" onclick="clearAllHandSlots()">🗑️ [HAPUS SEMUA]</button>
+            </div>
+
+            <div style="margin-top:2px;">
+                <label style="font-size:0.75rem; color:var(--color-green);">Pilih kartu di bawah untuk mengisi slot terpilih:</label>
+                <div class="picker-grid-9x4">${pickerHtml}</div>
+            </div>
+        `;
+
+        footer.innerHTML = `
+            <button class="btn btn-back" onclick="navigateTo(3)">⬅️ Kembali</button>
+            <button class="btn btn-next" onclick="navigateTo(5)">Selanjutnya ➡️</button>
+        `;
+    }
+
+    function switchHandMode(mode) {
+        state.handMode = mode;
+        activeSlotTarget = { mode: mode, groupIndex: 0, slotIndex: 0 };
+        saveState();
+        render();
+    }
+
+    function toggleMeldOpen(index, isOpen) {
+        state.standardMelds[index].isOpen = isOpen;
+        saveState();
+        const content = document.getElementById('appContent');
+        const scrollTop = content ? content.scrollTop : 0;
+        const winScroll = window.scrollY;
+        render();
+        if (content) content.scrollTop = scrollTop;
+        window.scrollTo(0, winScroll);
+    }
+
+    function selectSlot(mode, groupIndex, slotIndex) {
+        activeSlotTarget = { mode, groupIndex, slotIndex };
+        render();
+    }
+
+    function chooseTileForSlot(tileId) {
+        if (!activeSlotTarget) {
+            activeSlotTarget = { mode: state.handMode, groupIndex: 0, slotIndex: 0 };
+        }
+
+        if (activeSlotTarget.mode === 'standard') {
+            state.standardMelds[activeSlotTarget.groupIndex].tiles[activeSlotTarget.slotIndex] = tileId;
+            if (activeSlotTarget.slotIndex < (activeSlotTarget.groupIndex === 4 ? 1 : 2)) {
+                activeSlotTarget.slotIndex++;
+            } else if (activeSlotTarget.groupIndex < 4) {
+                activeSlotTarget.groupIndex++;
+                activeSlotTarget.slotIndex = 0;
+            }
+        } else {
+            state.sevenPairs[activeSlotTarget.groupIndex][activeSlotTarget.slotIndex] = tileId;
+            if (activeSlotTarget.slotIndex < 1) {
+                activeSlotTarget.slotIndex++;
+            } else if (activeSlotTarget.groupIndex < 6) {
+                activeSlotTarget.groupIndex++;
+                activeSlotTarget.slotIndex = 0;
+            }
+        }
+
+        saveState();
+        render();
+    }
+
+    function renderPage5(content, footer) {
+        const specials = [
+            { id: 'none', label: 'Tidak Ada Kondisi Spesial', desc: 'Perhitungan standar' },
+            { id: 'paochin', label: 'Pao Chin', desc: 'Kurang 1 kartu sebelum Hu.<br>+20 dengan KIM / +30 tanpa KIM' },
+            { id: 'sesampu', label: 'Se Sam Pu Tap (Thirteen Unconnected)', desc: 'Semua kartu tidak nyambung, tanpa kim.<br>+40 Poin' },
+            { id: 'capsayauw', label: 'Cap Sa Yauw (Thirteen Orphans)', desc: '1, 9 wan/tong/sok + 7 honor.<br>+40 dengan KIM / +60 tanpa KIM' },
+            { id: 'thihu', label: 'Thi Hu (Blessing of Earth)', desc: 'Hu dari buangan pertama.<br>+40 dengan KIM / +60 tanpa KIM' },
+            { id: 'thianhu', label: 'Thian Hu (Blessing of Heaven)', desc: 'Bandar langsung menang.<br>+40 dengan KIM / +60 tanpa KIM' }
+        ];
+
+        let optionsHtml = specials.map(s => `
+            <div class="option-card ${state.specialHand === s.id ? 'selected' : ''}" onclick="selectSpecialHand('${s.id}')">
+                <input type="radio" name="special" ${state.specialHand === s.id ? 'checked' : ''}>
+                <div>
+                    <div class="label-text">${s.label}</div>
+                    <div style="font-size:0.7rem; color:#718096;">${s.desc}</div>
+                </div>
+            </div>
+        `).join('');
+
+        content.innerHTML = `
+            <div class="page-title">5. Kondisi Spesial</div>
+            <div class="page-subtitle">Pilih Kondisi Spesial jika ada (hanya bisa pilih satu):</div>
+            ${optionsHtml}
+        `;
+
+        footer.innerHTML = `
+            <button class="btn btn-back" onclick="navigateTo(4)">⬅️ Kembali</button>
+            <button class="btn btn-yellow" onclick="navigateTo(6)">🎯 Hitung Nilai</button>
+        `;
+    }
+
+    function selectSpecialHand(id) {
+        state.specialHand = id;
+        saveState();
+        render();
+    }
+
+    function renderPage6(content, footer) {
+        const evaluation = calculateScore();
+
+        let breakdownItems = evaluation.items.map(item => `
+            <div class="breakdown-item ${item.pts === 0 ? 'batal' : ''}">
+                <span>${item.title}</span>
+                <span class="pts">${item.pts >= 0 ? '+' + item.pts : item.pts}</span>
+            </div>
+        `).join('');
+
+        let flowersVisualHtml = '';
+        if (state.selectedFlowers.length > 0) {
+            let flowerCardsHtml = state.selectedFlowers.map(fId => {
+                const fl = flowerTiles.find(f => f.id === fId);
+                return fl ? `
+                    <div class="visual-flower-card">
+                        <img src="${fl.img}" alt="${fl.name}">
+                        <span>${fl.name}</span>
+                    </div>
+                ` : '';
+            }).join('');
+
+            flowersVisualHtml = `
+                <div class="visual-section-title">
+                    <span>🌸 Kartu Bunga (${state.selectedFlowers.length})</span>
+                </div>
+                <div class="visual-flowers-row">${flowerCardsHtml}</div>
+            `;
+        }
+
+        let handSetsVisualHtml = '';
+        if (state.handMode === 'standard') {
+            let groupsHtml = state.standardMelds.map((m, idx) => {
+                const isPair = idx === 4;
+                const statusText = isPair ? 'Kaki / Ciok' : (m.isOpen ? 'Terbuka' : 'Tertutup');
+                const badgeClass = isPair ? 'open' : (m.isOpen ? 'open' : 'closed');
+
+                let tilesImgHtml = m.tiles.map(tId => {
+                    if (!tId) return '';
+                    const tileObj = standardTiles.find(st => st.id === tId);
+                    const isKim = tId === 'kim';
+                    return tileObj ? `
+                        <img src="${tileObj.img}" class="visual-tile-img ${isKim ? 'kim-highlight' : ''}" title="${tileObj.label}">
+                    ` : '';
+                }).join('');
+
+                return `
+                    <div class="visual-set-group">
+                        <span class="set-status-badge ${badgeClass}">${statusText}</span>
+                        <div class="visual-tiles-row">${tilesImgHtml}</div>
+                    </div>
+                `;
+            }).join('');
+
+            handSetsVisualHtml = `
+                <div class="visual-section-title">
+                    <span>🀄 Kartu Tangan Hu</span>
+                </div>
+                <div class="visual-sets-container">${groupsHtml}</div>
+            `;
+        } else {
+            let pairsHtml = state.sevenPairs.map((p, idx) => {
+                let tilesImgHtml = p.map(tId => {
+                    if (!tId) return '';
+                    const tileObj = standardTiles.find(st => st.id === tId);
+                    const isKim = tId === 'kim';
+                    return tileObj ? `
+                        <img src="${tileObj.img}" class="visual-tile-img ${isKim ? 'kim-highlight' : ''}" title="${tileObj.label}">
+                    ` : '';
+                }).join('');
+
+                return `
+                    <div class="visual-set-group">
+                        <span class="set-status-badge closed">Pair ${idx + 1}</span>
+                        <div class="visual-tiles-row">${tilesImgHtml}</div>
+                    </div>
+                `;
+            }).join('');
+
+            handSetsVisualHtml = `
+                <div class="visual-section-title">
+                    <span>🀄 Kartu Tangan Hu (Seven Pairs)</span>
+                </div>
+                <div class="visual-sets-container">${pairsHtml}</div>
+            `;
+        }
+
+        const seatWindLabel = windNamesMap[state.seatWind] || '東 (East) 1';
+        const prevalentWindLabel = windNamesMap[state.prevalentWind] || '東 (East) 1';
+
+        // STICKY HEADER for Total Nilai Kemenangan & title upwards (Rule 3)
+        content.innerHTML = `
+            <div class="sticky-result-header">
+                <div class="page-title" style="margin-bottom: 6px;">Hasil Perhitungan Score</div>
+                <div class="score-box">
+                    <div style="font-size:0.75rem; font-weight:600; margin-bottom:2px;">TOTAL NILAI KEMENANGAN</div>
+                    <div class="score-val">${evaluation.totalScore}</div>
+                </div>
+            </div>
+
+            <div class="wind-info-banner">
+                <div>Angin Duduk: <span>${seatWindLabel}</span></div>
+                <div>Angin Ronde: <span>${prevalentWindLabel}</span></div>
+            </div>
+
+            <div class="result-visual-box">
+                ${flowersVisualHtml}
+                ${handSetsVisualHtml}
+            </div>
+
+            <div class="breakdown-list">
+                ${breakdownItems}
+            </div>
+        `;
+
+        footer.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-next" onclick="copyToClipboard(${evaluation.totalScore})">📋 Simpan ke MEMORI</button>
+                    <button class="btn btn-danger" onclick="resetAll()">🔄 Hitung Lagi</button>
+                </div>
+                <button class="btn btn-back" onclick="navigateTo(5)">⬅️ Kembali</button>
+            </div>
+        `;
+    }
+
+    function copyToClipboard(totalScore) {
+        const evaluation = calculateScore();
+        let summary = `TOTAL NILAI = ${totalScore}\n`;
+        evaluation.items.forEach(item => {
+            summary += `- ${item.title} = +${item.pts}\n`;
+        });
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(summary).then(() => {
+                showToast('Rincian nilai disalin ke Clipboard!');
+            }).catch(() => {
+                showToast('Skor dicatat!');
+            });
+        } else {
+            showToast('Hasil nilai disalin!');
+        }
+    }
+
+    function isSequenceSet(tiles) {
+        if (!tiles || tiles.length !== 3 || tiles.includes(null)) return false;
+        let nonKim = tiles.filter(t => t !== 'kim').map(id => standardTiles.find(st => st.id === id));
+        let kimCount = tiles.filter(t => t === 'kim').length;
+
+        if (kimCount === 3) return true;
+        if (kimCount === 2) {
+            return nonKim[0] && ['wan', 'sok', 'tong'].includes(nonKim[0].type);
+        }
+        if (kimCount === 1) {
+            if (!nonKim[0] || !nonKim[1]) return false;
+            if (nonKim[0].type !== nonKim[1].type) return false;
+            if (!['wan','sok','tong'].includes(nonKim[0].type)) return false;
+            let vals = [nonKim[0].val, nonKim[1].val].sort((a,b) => a - b);
+            let diff = vals[1] - vals[0];
+            return diff === 1 || diff === 2;
+        }
+
+        if (!nonKim[0] || !nonKim[1] || !nonKim[2]) return false;
+        if (nonKim[0].type !== nonKim[1].type || nonKim[1].type !== nonKim[2].type) return false;
+        if (!['wan','sok','tong'].includes(nonKim[0].type)) return false;
+        let vals = [nonKim[0].val, nonKim[1].val, nonKim[2].val].sort((a,b) => a - b);
+        return (vals[1] - vals[0] === 1) && (vals[2] - vals[1] === 1);
+    }
+
+    function isTripletSet(tiles) {
+        if (!tiles || tiles.length !== 3 || tiles.includes(null)) return false;
+        let nonKim = tiles.filter(t => t !== 'kim');
+        if (nonKim.length <= 1) return true;
+        if (nonKim.length === 2) return nonKim[0] === nonKim[1];
+        return nonKim[0] === nonKim[1] && nonKim[1] === nonKim[2];
+    }
+
+    function getTileType(tId) {
+        if (!tId || tId === 'kim') return 'kim';
+        const obj = standardTiles.find(st => st.id === tId);
+        return obj ? obj.type : 'unknown';
+    }
+
+    function getTileVal(tId) {
+        if (!tId || tId === 'kim') return 'kim';
+        const obj = standardTiles.find(st => st.id === tId);
+        return obj ? obj.val : null;
+    }
+
+    function isChiTueiPingHu(pairs) {
+        let suitRanks = { wan: [], sok: [], tong: [] };
+        let validPairCount = 0;
+
+        for (let i = 0; i < 7; i++) {
+            let p = pairs[i];
+            let nonKim = p.filter(t => t !== 'kim');
+            let tileId = nonKim.length > 0 ? nonKim[0] : null;
+
+            if (tileId) {
+                let type = getTileType(tileId);
+                let val = getTileVal(tileId);
+                if (['wan', 'sok', 'tong'].includes(type) && typeof val === 'number') {
+                    suitRanks[type].push(val);
+                    validPairCount++;
+                }
+            }
+        }
+
+        if (validPairCount < 6) return false;
+
+        let consecutiveGroupsFound = 0;
+        ['wan', 'sok', 'tong'].forEach(s => {
+            let ranks = suitRanks[s].sort((a,b) => a - b);
+            for (let i = 0; i <= ranks.length - 3; i++) {
+                if (ranks[i+1] === ranks[i] + 1 && ranks[i+2] === ranks[i] + 2) {
+                    consecutiveGroupsFound++;
+                    i += 2;
+                }
+            }
+        });
+
+        return consecutiveGroupsFound >= 2;
+    }
+
+    function calculateScore() {
+        let totalScore = 0;
+        let items = [];
+
+        if (state.winWay === 'cemo') { totalScore += 1; items.push({ title: 'Ce Mo (Self-Draw)', pts: 1 }); }
+        else if (state.winWay === 'mun') { totalScore += 1; items.push({ title: 'Mun (Concealed Hand)', pts: 1 }); }
+        else if (state.winWay === 'cemopu') { totalScore += 5; items.push({ title: 'Ce Mo Pu Ciu Jen', pts: 5 }); }
+        else if (state.winWay === 'chiongkong') { totalScore += 5; items.push({ title: 'Chiong Kong', pts: 5 }); }
+        else if (state.winWay === 'kongsong') { totalScore += 5; items.push({ title: 'Kong Song Hu', pts: 5 }); }
+        else if (state.winWay === 'kongkong') { totalScore += 30; items.push({ title: 'Kong Kong Hu', pts: 30 }); }
+
+        let allTiles = [];
+        if (state.handMode === 'standard') {
+            state.standardMelds.forEach(m => m.tiles.forEach(t => { if (t) allTiles.push(t); }));
+        } else {
+            state.sevenPairs.forEach(p => p.forEach(t => { if (t) allTiles.push(t); }));
+        }
+
+        let kimCount = allTiles.filter(t => t === 'kim').length;
+        let hasKim = kimCount > 0;
+
+        let flowerPts = 0;
+        let redCount = 0;
+        let blackCount = 0;
+        state.selectedFlowers.forEach(fId => {
+            const fl = flowerTiles.find(f => f.id === fId);
+            if (fl) {
+                if (fl.code.startsWith('red')) {
+                    redCount++;
+                    flowerPts += 1;
+                    const num = parseInt(fl.code.replace('red', ''));
+                    if (num === state.seatWind) flowerPts += 1;
+                } else if (fl.code.startsWith('black')) {
+                    blackCount++;
+                    const num = parseInt(fl.code.replace('black', ''));
+                    if (num === state.seatWind) flowerPts += 1;
+                }
+            }
+        });
+
+        const totalFlowers = state.selectedFlowers.length;
+        let hasHonors = allTiles.some(t => {
+            const type = getTileType(t);
+            return type === 'dragon' || type === 'wind';
+        });
+
+        if (totalFlowers === 0 && !hasHonors) {
+            flowerPts += 3;
+            items.push({ title: 'Tidak punya BUNGA dan SURAT', pts: 3 });
+        } else if (flowerPts > 0) {
+            items.push({ title: 'Kartu Bunga', pts: flowerPts });
+        }
+
+        if (blackCount === 4) { totalScore += 10; items.push({ title: 'Empat Bunga Hitam', pts: 10 }); }
+        if (redCount === 4) { totalScore += 20; items.push({ title: 'Empat Bunga Merah', pts: 20 }); }
+        if (totalFlowers === 7) { totalScore += 30; items.push({ title: 'Tujuh Bunga', pts: 30 }); }
+        if (totalFlowers === 8) { totalScore += 60; items.push({ title: 'Delapan Bunga', pts: 60 }); }
+        totalScore += flowerPts;
+
+        let hasKimThi = false;
+        if (state.handMode === 'standard') {
+            for (let i = 0; i < 4; i++) {
+                const meld = state.standardMelds[i];
+                if (meld.tiles[0] === 'kim' && meld.tiles[1] === 'kim' && meld.tiles[2] === 'kim') {
+                    hasKimThi = true;
+                    break;
+                }
+            }
+        }
+
+        if (hasKimThi) {
+            totalScore += 30;
+            items.push({ title: 'Kim Thi (3 KIM Triplet Set)', pts: 30 });
+        } else if (kimCount === 4) {
+            totalScore += 40;
+            items.push({ title: 'Empat KIM / Joker', pts: 40 });
+        } else if (kimCount > 0) {
+            totalScore += kimCount;
+            items.push({ title: `KIM / Joker (${kimCount} kartu)`, pts: kimCount });
+        } else {
+            totalScore += 3;
+            items.push({ title: 'Tanpa KIM (Joker)', pts: 3 });
+        }
+
+        if (state.handMode === 'standard') {
+            const pairTiles = state.standardMelds[4].tiles;
+            if (pairTiles[0] === 'kim' && pairTiles[1] === 'kim') {
+                totalScore += 20;
+                items.push({ title: 'Kim Ciok (Pair KIM)', pts: 20 });
+            }
+        }
+
+        let suitsPresent = new Set();
+        let containsHonors = false;
+        let allSetsAreTriplets = true;
+        let allSetsAreChows = true;
+        let allTerminalsOrHonorsTriplets = true;
+        let allTerminalsOnlyTriplets = true;
+        let allHonorsTriplets = true;
+
+        if (state.handMode === 'standard') {
+            for (let i = 0; i < 5; i++) {
+                const meld = state.standardMelds[i];
+                const isPair = i === 4;
+                const isSeq = !isPair && isSequenceSet(meld.tiles);
+                const isTris = !isPair && isTripletSet(meld.tiles);
+
+                if (!isPair) {
+                    if (!isSeq) allSetsAreChows = false;
+                    if (!isTris) allSetsAreTriplets = false;
+                }
+
+                meld.tiles.forEach(tId => {
+                    if (tId && tId !== 'kim') {
+                        const type = getTileType(tId);
+                        const val = getTileVal(tId);
+
+                        if (['wan', 'sok', 'tong'].includes(type)) {
+                            suitsPresent.add(type);
+                            if (val !== 1 && val !== 9) {
+                                allTerminalsOrHonorsTriplets = false;
+                                allTerminalsOnlyTriplets = false;
+                            }
+                            allHonorsTriplets = false;
+                        } else if (type === 'dragon' || type === 'wind') {
+                            containsHonors = true;
+                            allTerminalsOnlyTriplets = false;
+                        }
+                    }
+                });
+            }
+        }
+
+        if (state.handMode === 'standard') {
+            if (allHonorsTriplets && allSetsAreTriplets) {
+                let pts = hasKim ? 40 : 60;
+                totalScore += pts;
+                items.push({ title: `Ie Set Surat (All Honors) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else if (suitsPresent.size === 1 && !containsHonors && allSetsAreTriplets) {
+                let pts = hasKim ? 40 : 50;
+                totalScore += pts;
+                items.push({ title: `Ie Set Tuei Tuei (Full Flush All Pungs) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else if (suitsPresent.size === 1 && !containsHonors && allSetsAreChows) {
+                let pts = hasKim ? 30 : 40;
+                totalScore += pts;
+                items.push({ title: `Ie Set Ping Hu (Full Flush All Chows) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else if (suitsPresent.size === 1 && !containsHonors) {
+                let pts = hasKim ? 20 : 30;
+                totalScore += pts;
+                items.push({ title: `Ie Set (Full Flush) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else if (allTerminalsOnlyTriplets && allSetsAreTriplets) {
+                let pts = hasKim ? 30 : 40;
+                totalScore += pts;
+                items.push({ title: `Yau Ciu (All Terminals) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else if (allTerminalsOrHonorsTriplets && containsHonors && allSetsAreTriplets) {
+                let pts = hasKim ? 10 : 20;
+                totalScore += pts;
+                items.push({ title: `Cau It Yau Ciu (Mixed Terminals) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else if (suitsPresent.size === 1 && containsHonors) {
+                let pts = hasKim ? 5 : 10;
+                totalScore += pts;
+                items.push({ title: `Cau It (Mixed Flush) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+
+            let concealedPungCount = 0;
+            for (let i = 0; i < 4; i++) {
+                const meld = state.standardMelds[i];
+                if (!meld.isOpen && isTripletSet(meld.tiles)) {
+                    concealedPungCount++;
+                }
+            }
+
+            if (concealedPungCount === 4) {
+                let pts = hasKim ? 40 : 50;
+                totalScore += pts;
+                items.push({ title: `Si Am Kang (Four Concealed Pungs) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            } else if (concealedPungCount === 3) {
+                totalScore += 5;
+                items.push({ title: 'Sam An Kang (Three Concealed Pungs)', pts: 5 });
+            }
+
+            let isTanTiau = state.standardMelds.slice(0, 4).every(m => m.isOpen);
+            if (isTanTiau) {
+                totalScore += 5;
+                items.push({ title: 'Tan Tiau (Melded Hand)', pts: 5 });
+            }
+
+            if (allSetsAreTriplets && !allHonorsTriplets && suitsPresent.size > 1) {
+                let pts = hasKim ? 5 : 10;
+                totalScore += pts;
+                items.push({ title: `Tuei Tuei (All Pungs) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+
+            if (allSetsAreChows && suitsPresent.size > 1) {
+                let pingHuBatal = false;
+                const pairTiles = state.standardMelds[4].tiles;
+                pairTiles.forEach(tId => {
+                    if (tId && tId !== 'kim') {
+                        const type = getTileType(tId);
+                        const val = getTileVal(tId);
+                        if (type === 'dragon') pingHuBatal = true;
+                        if (type === 'wind' && (val === state.seatWind || val === state.prevalentWind)) pingHuBatal = true;
+                    }
+                });
+
+                if (pingHuBatal) {
+                    items.push({ title: 'Ping Hu (All Chows) BATAL', pts: 0 });
+                } else {
+                    totalScore += 3;
+                    items.push({ title: 'Ping Hu (All Chows)', pts: 3 });
+                }
+            }
+        }
+
+        if (state.handMode === 'seven_pairs') {
+            let pairSuits = new Set();
+            let pairHasHonors = false;
+            let pairOnly19 = true;
+            let pairOnly19OrHonors = true;
+            let pairTypesList = [];
+            let hasRepeatedPairs = false;
+
+            for (let i = 0; i < 7; i++) {
+                const p = state.sevenPairs[i];
+                const t0 = p[0];
+                if (t0 && t0 !== 'kim') {
+                    const type = getTileType(t0);
+                    const val = getTileVal(t0);
+
+                    if (['wan', 'sok', 'tong'].includes(type)) {
+                        pairSuits.add(type);
+                        if (val !== 1 && val !== 9) {
+                            pairOnly19 = false;
+                            pairOnly19OrHonors = false;
+                        }
+                    } else if (type === 'dragon' || type === 'wind') {
+                        pairHasHonors = true;
+                        pairOnly19 = false;
+                    }
+
+                    if (pairTypesList.includes(t0)) {
+                        hasRepeatedPairs = true;
+                    } else {
+                        pairTypesList.push(t0);
+                    }
+                }
+            }
+
+            if (pairSuits.size === 1 && !pairHasHonors && !hasRepeatedPairs) {
+                let pts = hasKim ? 40 : 50;
+                totalScore += pts;
+                items.push({ title: `Chi Tuei It Set (Seven Pairs Full Flush) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else if (pairOnly19 && !pairHasHonors) {
+                let pts = hasKim ? 40 : 50;
+                totalScore += pts;
+                items.push({ title: `Chi Tuei Yau Ciu (Seven Pairs All Terminals) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else if (pairOnly19OrHonors && pairHasHonors && !hasRepeatedPairs) {
+                let pts = hasKim ? 30 : 40;
+                totalScore += pts;
+                items.push({ title: `Chi Tuei Cau It Yau Ciu (Seven Pairs Mixed Terminals) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else if (isChiTueiPingHu(state.sevenPairs) && !hasRepeatedPairs) {
+                let pts = hasKim ? 20 : 30;
+                totalScore += pts;
+                items.push({ title: `Chi Tuei Ping Hu (Seven Pairs All Chows) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else if (pairSuits.size === 1 && pairHasHonors && !hasRepeatedPairs) {
+                let pts = hasKim ? 20 : 30;
+                totalScore += pts;
+                items.push({ title: `Chi Tuei Cau It (Seven Pairs Mixed Flush) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+            else {
+                let pts = hasKim ? 10 : 20;
+                totalScore += pts;
+                items.push({ title: `Chi Tuei (Seven Pairs) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+            }
+        }
+
+        ['cung', 'fat', 'pai'].forEach(d => {
+            let cnt = allTiles.filter(t => t === d).length;
+            if (cnt >= 3) {
+                let pts = d === 'cung' ? 2 : 1;
+                let name = d === 'cung' ? 'Naga Merah (Cung)' : d === 'fat' ? 'Naga Hijau (Fat)' : 'Naga Putih (Pai)';
+                totalScore += pts;
+                items.push({ title: `Tris ${name}`, pts: pts });
+            }
+        });
+
+        const windMap = { 1: 'tung', 2: 'nan', 3: 'si', 4: 'pei' };
+        let seatWindTile = windMap[state.seatWind];
+        let prevalentWindTile = windMap[state.prevalentWind];
+
+        let seatCount = allTiles.filter(t => t === seatWindTile).length;
+        if (seatCount >= 3) {
+            totalScore += 1;
+            items.push({ title: 'Pung Angin Duduk (Seat Wind)', pts: 1 });
+        }
+
+        let prevalentCount = allTiles.filter(t => t === prevalentWindTile).length;
+        if (prevalentCount >= 3 && seatWindTile !== prevalentWindTile) {
+            totalScore += 1;
+            items.push({ title: 'Pung Angin Ronde (Prevalent Wind)', pts: 1 });
+        }
+
+        const orphanTileIds = ['1_wan', '9_wan', '1_sok', '9_sok', '1_tong', '9_tong', 'tung', 'nan', 'si', 'pei', 'cung', 'fat', 'pai'];
+        let isAutoCapSaYauw = false;
+        if (allTiles.length === 14) {
+            let missingOrphans = 0;
+            orphanTileIds.forEach(id => {
+                if (!allTiles.includes(id)) missingOrphans++;
+            });
+            if (missingOrphans <= kimCount) {
+                isAutoCapSaYauw = true;
+            }
+        }
+
+        if (state.specialHand === 'capsayauw' || isAutoCapSaYauw) {
+            let pts = hasKim ? 40 : 60;
+            totalScore += pts;
+            items.push({ title: `Cap Sa Yauw (Thirteen Orphans) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+        } else if (state.specialHand === 'paochin') {
+            let pts = hasKim ? 20 : 30;
+            totalScore += pts;
+            items.push({ title: `Pao Chin ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+        } else if (state.specialHand === 'sesampu') {
+            totalScore += 40;
+            items.push({ title: 'Se Sam Pu Tap', pts: 40 });
+        } else if (state.specialHand === 'thihu') {
+            let pts = hasKim ? 40 : 60;
+            totalScore += pts;
+            items.push({ title: `Thi Hu ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+        } else if (state.specialHand === 'thianhu') {
+            let pts = hasKim ? 40 : 60;
+            totalScore += pts;
+            items.push({ title: `Thian Hu ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+        }
+
+        return { totalScore, items };
+    }
+
+    loadState();
+    render();
+</script>
+<script>
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.register (
+          '/iniberapa/sw.js',
+          {scope: '/iniberapa/'}
+        )
+      }
+  </script>
+</body>
+</html>
