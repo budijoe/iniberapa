@@ -1355,7 +1355,7 @@
             ${meldSection}
 
             <div class="toolbar-area">
-                <button class="btn-clear-all" onclick="clearAllHandSlots()">🗑️ [HAPUS SEMUA]</button>
+                <button class="btn-clear-all" onclick="clearAllHandSlots()">❌️ [HAPUS SEMUA]</button>
             </div>
 
             <div style="margin-top:2px;">
@@ -1450,8 +1450,8 @@
         `;
 
         footer.innerHTML = `
-            <button class="btn btn-back" onclick="navigateTo(4)">⬅️ Kembali</button>
-            <button class="btn btn-yellow" onclick="navigateTo(6)">🎯 Hitung Nilai</button>
+            <button class="btn btn-back" onclick="navigateTo(4)">← Kembali</button>
+            <button class="btn btn-yellow" onclick="navigateTo(6)">✓ Hitung Nilai</button>
         `;
     }
 
@@ -1578,9 +1578,9 @@
 
         // Susunan footer halaman hasil: Tombol KEMBALI di paling kiri, SALIN di paling kanan
         footer.innerHTML = `
-            <button class="btn btn-back" onclick="navigateTo(5)">⬅️ Kembali</button>
-            <button class="btn btn-danger" onclick="openResetModal()">🔄 Ulang</button>
-            <button class="btn btn-next" onclick="copyToClipboard(${evaluation.totalScore})">📋 Salin</button>
+            <button class="btn btn-back" onclick="navigateTo(5)">← Kembali</button>
+            <button class="btn btn-danger" onclick="openResetModal()">↺ Ulang</button>
+            <button class="btn btn-next" onclick="copyToClipboard(${evaluation.totalScore})">⧉ Salin</button>
         `;
     }
 
