@@ -107,7 +107,7 @@
             margin-bottom: 8px;
         }
 
-        /* Sticky Header for Result Page */
+        /* Sticky Header for Result Page (Includes title, total score, and wind banner) */
         .sticky-result-header {
             position: sticky;
             top: 0;
@@ -267,7 +267,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* Standard 2-Column Grid Layout for Sets (Rule 2) */
+        /* Standard 2-Column Grid Layout for Sets */
         .standard-sets-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -307,7 +307,7 @@
             text-align: center;
         }
 
-        /* Seven Pairs Layout (Rule 1): Pair 1-4 top row grid, Pair 5-7 bottom */
+        /* Seven Pairs Layout */
         .seven-pairs-grid-top {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -587,17 +587,17 @@
         footer {
             background-color: white;
             border-top: 1px solid #e2e8f0;
-            padding: 10px 16px calc(56px + env(safe-area-inset-bottom, 0px));
+            padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px));
             display: flex;
-            flex-direction: column-reverse;
+            flex-direction: row;
             gap: 8px;
             z-index: 10;
             flex-shrink: 0;
         }
 
         footer > .btn {
-            flex: none;
-            width: 100%;
+            flex: 1;
+            width: auto;
         }
 
         .btn {
@@ -653,6 +653,14 @@
             font-size: 2rem;
             font-weight: 800;
             color: var(--color-yellow);
+            line-height: 1.1;
+        }
+
+        .score-box .score-tay {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            margin-top: 2px;
         }
 
         .breakdown-list {
@@ -720,56 +728,88 @@
 <div id="toastMsg" class="toast-msg"></div>
 
 <script>
+    // Audio synthesizer untuk bunyi klik tombol
+    let audioCtx = null;
+    function playClickSound() {
+        try {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(2800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1400, audioCtx.currentTime + 0.02);
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.02);
+        } catch(e) {}
+    }
+
+    // Global listener untuk klik tombol agar otomatis berbunyi klik
+    document.addEventListener('click', function(e) {
+        const target = e.target.closest('button, .wind-btn, .option-card, .tile-card, .tab-btn, .open-toggle, .tile-slot, .picker-item, .btn-clear-all');
+        if (target) {
+            playClickSound();
+        }
+    }, true);
+
     const SVG_MASTER = "https://raw.githubusercontent.com/budijoe/skor-mahjong/main/";
 
-        const flowerTiles = [
-            { id: 'f_red_1', name: '1 Merah', code: 'red1', img: SVG_MASTER + 'svg/35-spring.svg' },
-            { id: 'f_red_2', name: '2 Merah', code: 'red2', img: SVG_MASTER + 'svg/36-summer.svg' },
-            { id: 'f_red_3', name: '3 Merah', code: 'red3', img: SVG_MASTER + 'svg/37-autumn.svg' },
-            { id: 'f_red_4', name: '4 Merah', code: 'red4', img: SVG_MASTER + 'svg/38-winter.svg' },
-            { id: 'f_black_1', name: '1 Hitam', code: 'black1', img: SVG_MASTER + 'svg/39-plum.svg' },
-            { id: 'f_black_2', name: '2 Hitam', code: 'black2', img: SVG_MASTER + 'svg/40-orchid.svg' },
-            { id: 'f_black_3', name: '3 Hitam', code: 'black3', img: SVG_MASTER + 'svg/41-chrysanthemum.svg' },
-            { id: 'f_black_4', name: '4 Hitam', code: 'black4', img: SVG_MASTER + 'svg/42-bamboo.svg' }
-        ];
+    const flowerTiles = [
+        { id: 'f_red_1', name: '1 Merah', code: 'red1', img: SVG_MASTER + 'svg/35-spring.svg' },
+        { id: 'f_red_2', name: '2 Merah', code: 'red2', img: SVG_MASTER + 'svg/36-summer.svg' },
+        { id: 'f_red_3', name: '3 Merah', code: 'red3', img: SVG_MASTER + 'svg/37-autumn.svg' },
+        { id: 'f_red_4', name: '4 Merah', code: 'red4', img: SVG_MASTER + 'svg/38-winter.svg' },
+        { id: 'f_black_1', name: '1 Hitam', code: 'black1', img: SVG_MASTER + 'svg/39-plum.svg' },
+        { id: 'f_black_2', name: '2 Hitam', code: 'black2', img: SVG_MASTER + 'svg/40-orchid.svg' },
+        { id: 'f_black_3', name: '3 Hitam', code: 'black3', img: SVG_MASTER + 'svg/41-chrysanthemum.svg' },
+        { id: 'f_black_4', name: '4 Hitam', code: 'black4', img: SVG_MASTER + 'svg/42-bamboo.svg' }
+    ];
 
-        const standardTiles = [
-            { id: '1_wan', label: '1 Wan', type: 'wan', val: 1, img: SVG_MASTER + 'svg/08-characters-1.svg' },
-            { id: '2_wan', label: '2 Wan', type: 'wan', val: 2, img: SVG_MASTER + 'svg/09-characters-2.svg' },
-            { id: '3_wan', label: '3 Wan', type: 'wan', val: 3, img: SVG_MASTER + 'svg/10-characters-3.svg' },
-            { id: '4_wan', label: '4 Wan', type: 'wan', val: 4, img: SVG_MASTER + 'svg/11-characters-4.svg' },
-            { id: '5_wan', label: '5 Wan', type: 'wan', val: 5, img: SVG_MASTER + 'svg/12-characters-5.svg' },
-            { id: '6_wan', label: '6 Wan', type: 'wan', val: 6, img: SVG_MASTER + 'svg/13-characters-6.svg' },
-            { id: '7_wan', label: '7 Wan', type: 'wan', val: 7, img: SVG_MASTER + 'svg/14-characters-7.svg' },
-            { id: '8_wan', label: '8 Wan', type: 'wan', val: 8, img: SVG_MASTER + 'svg/15-characters-8.svg' },
-            { id: '9_wan', label: '9 Wan', type: 'wan', val: 9, img: SVG_MASTER + 'svg/16-characters-9.svg' },
-            { id: '1_sok', label: '1 Sok', type: 'sok', val: 1, img: SVG_MASTER + 'svg/26-bamboos-1.svg' },
-            { id: '2_sok', label: '2 Sok', type: 'sok', val: 2, img: SVG_MASTER + 'svg/27-bamboos-2.svg' },
-            { id: '3_sok', label: '3 Sok', type: 'sok', val: 3, img: SVG_MASTER + 'svg/28-bamboos-3.svg' },
-            { id: '4_sok', label: '4 Sok', type: 'sok', val: 4, img: SVG_MASTER + 'svg/29-bamboos-4.svg' },
-            { id: '5_sok', label: '5 Sok', type: 'sok', val: 5, img: SVG_MASTER + 'svg/30-bamboos-5.svg' },
-            { id: '6_sok', label: '6 Sok', type: 'sok', val: 6, img: SVG_MASTER + 'svg/31-bamboos-6.svg' },
-            { id: '7_sok', label: '7 Sok', type: 'sok', val: 7, img: SVG_MASTER + 'svg/32-bamboos-7.svg' },
-            { id: '8_sok', label: '8 Sok', type: 'sok', val: 8, img: SVG_MASTER + 'svg/33-bamboos-8.svg' },
-            { id: '9_sok', label: '9 Sok', type: 'sok', val: 9, img: SVG_MASTER + 'svg/34-bamboos-9.svg' },
-            { id: '1_tong', label: '1 Tong', type: 'tong', val: 1, img: SVG_MASTER + 'svg/17-circles-1-variant-4.svg' },
-            { id: '2_tong', label: '2 Tong', type: 'tong', val: 2, img: SVG_MASTER + 'svg/18-circles-2.svg' },
-            { id: '3_tong', label: '3 Tong', type: 'tong', val: 3, img: SVG_MASTER + 'svg/19-circles-3.svg' },
-            { id: '4_tong', label: '4 Tong', type: 'tong', val: 4, img: SVG_MASTER + 'svg/20-circles-4.svg' },
-            { id: '5_tong', label: '5 Tong', type: 'tong', val: 5, img: SVG_MASTER + 'svg/21-circles-5.svg' },
-            { id: '6_tong', label: '6 Tong', type: 'tong', val: 6, img: SVG_MASTER + 'svg/22-circles-6.svg' },
-            { id: '7_tong', label: '7 Tong', type: 'tong', val: 7, img: SVG_MASTER + 'svg/23-circles-7.svg' },
-            { id: '8_tong', label: '8 Tong', type: 'tong', val: 8, img: SVG_MASTER + 'svg/24-circles-8.svg' },
-            { id: '9_tong', label: '9 Tong', type: 'tong', val: 9, img: SVG_MASTER + 'svg/25-circles-9.svg' },
-            { id: 'cung', label: 'Cung (Red Dragon)', type: 'dragon', val: 'cung', img: SVG_MASTER + 'svg/03-red-dragon.svg' },
-            { id: 'fat', label: 'Fat (Green Dragon)', type: 'dragon', val: 'fat', img: SVG_MASTER + 'svg/02-green-dragon.svg' },
-            { id: 'pai', label: 'Pai (White Dragon)', type: 'dragon', val: 'pai', img: SVG_MASTER + 'svg/01-white-dragon.svg' },
-            { id: 'tung', label: 'Tung (East)', type: 'wind', val: 1, img: SVG_MASTER + 'svg/04-east-wind.svg' },
-            { id: 'nan', label: 'Nan (South)', type: 'wind', val: 2, img: SVG_MASTER + 'svg/05-south-wind.svg' },
-            { id: 'si', label: 'Si (West)', type: 'wind', val: 3, img: SVG_MASTER + 'svg/06-west-wind.svg' },
-            { id: 'pei', label: 'Pei (North)', type: 'wind', val: 4, img: SVG_MASTER + 'svg/07-north-wind.svg' },
-            { id: 'kim', label: 'KIM / Joker', type: 'kim', val: 'kim', img: SVG_MASTER + 'svg/44-joker-clown.svg', span2: true }
-        ];
+    const standardTiles = [
+        { id: '1_wan', label: '1 Wan', type: 'wan', val: 1, img: SVG_MASTER + 'svg/08-characters-1.svg' },
+        { id: '2_wan', label: '2 Wan', type: 'wan', val: 2, img: SVG_MASTER + 'svg/09-characters-2.svg' },
+        { id: '3_wan', label: '3 Wan', type: 'wan', val: 3, img: SVG_MASTER + 'svg/10-characters-3.svg' },
+        { id: '4_wan', label: '4 Wan', type: 'wan', val: 4, img: SVG_MASTER + 'svg/11-characters-4.svg' },
+        { id: '5_wan', label: '5 Wan', type: 'wan', val: 5, img: SVG_MASTER + 'svg/12-characters-5.svg' },
+        { id: '6_wan', label: '6 Wan', type: 'wan', val: 6, img: SVG_MASTER + 'svg/13-characters-6.svg' },
+        { id: '7_wan', label: '7 Wan', type: 'wan', val: 7, img: SVG_MASTER + 'svg/14-characters-7.svg' },
+        { id: '8_wan', label: '8 Wan', type: 'wan', val: 8, img: SVG_MASTER + 'svg/15-characters-8.svg' },
+        { id: '9_wan', label: '9 Wan', type: 'wan', val: 9, img: SVG_MASTER + 'svg/16-characters-9.svg' },
+        { id: '1_sok', label: '1 Sok', type: 'sok', val: 1, img: SVG_MASTER + 'svg/26-bamboos-1.svg' },
+        { id: '2_sok', label: '2 Sok', type: 'sok', val: 2, img: SVG_MASTER + 'svg/27-bamboos-2.svg' },
+        { id: '3_sok', label: '3 Sok', type: 'sok', val: 3, img: SVG_MASTER + 'svg/28-bamboos-3.svg' },
+        { id: '4_sok', label: '4 Sok', type: 'sok', val: 4, img: SVG_MASTER + 'svg/29-bamboos-4.svg' },
+        { id: '5_sok', label: '5 Sok', type: 'sok', val: 5, img: SVG_MASTER + 'svg/30-bamboos-5.svg' },
+        { id: '6_sok', label: '6 Sok', type: 'sok', val: 6, img: SVG_MASTER + 'svg/31-bamboos-6.svg' },
+        { id: '7_sok', label: '7 Sok', type: 'sok', val: 7, img: SVG_MASTER + 'svg/32-bamboos-7.svg' },
+        { id: '8_sok', label: '8 Sok', type: 'sok', val: 8, img: SVG_MASTER + 'svg/33-bamboos-8.svg' },
+        { id: '9_sok', label: '9 Sok', type: 'sok', val: 9, img: SVG_MASTER + 'svg/34-bamboos-9.svg' },
+        { id: '1_tong', label: '1 Tong', type: 'tong', val: 1, img: SVG_MASTER + 'svg/17-circles-1-variant-4.svg' },
+        { id: '2_tong', label: '2 Tong', type: 'tong', val: 2, img: SVG_MASTER + 'svg/18-circles-2.svg' },
+        { id: '3_tong', label: '3 Tong', type: 'tong', val: 3, img: SVG_MASTER + 'svg/19-circles-3.svg' },
+        { id: '4_tong', label: '4 Tong', type: 'tong', val: 4, img: SVG_MASTER + 'svg/20-circles-4.svg' },
+        { id: '5_tong', label: '5 Tong', type: 'tong', val: 5, img: SVG_MASTER + 'svg/21-circles-5.svg' },
+        { id: '6_tong', label: '6 Tong', type: 'tong', val: 6, img: SVG_MASTER + 'svg/22-circles-6.svg' },
+        { id: '7_tong', label: '7 Tong', type: 'tong', val: 7, img: SVG_MASTER + 'svg/23-circles-7.svg' },
+        { id: '8_tong', label: '8 Tong', type: 'tong', val: 8, img: SVG_MASTER + 'svg/24-circles-8.svg' },
+        { id: '9_tong', label: '9 Tong', type: 'tong', val: 9, img: SVG_MASTER + 'svg/25-circles-9.svg' },
+        { id: 'cung', label: 'Cung (Red Dragon)', type: 'dragon', val: 'cung', img: SVG_MASTER + 'svg/03-red-dragon.svg' },
+        { id: 'fat', label: 'Fat (Green Dragon)', type: 'dragon', val: 'fat', img: SVG_MASTER + 'svg/02-green-dragon.svg' },
+        { id: 'pai', label: 'Pai (White Dragon)', type: 'dragon', val: 'pai', img: SVG_MASTER + 'svg/01-white-dragon.svg' },
+        { id: 'tung', label: 'Tung (East)', type: 'wind', val: 1, img: SVG_MASTER + 'svg/04-east-wind.svg' },
+        { id: 'nan', label: 'Nan (South)', type: 'wind', val: 2, img: SVG_MASTER + 'svg/05-south-wind.svg' },
+        { id: 'si', label: 'Si (West)', type: 'wind', val: 3, img: SVG_MASTER + 'svg/06-west-wind.svg' },
+        { id: 'pei', label: 'Pei (North)', type: 'wind', val: 4, img: SVG_MASTER + 'svg/07-north-wind.svg' },
+        { id: 'kim', label: 'KIM / Joker', type: 'kim', val: 'kim', img: SVG_MASTER + 'svg/44-joker-clown.svg', span2: true }
+    ];
 
     const windNamesMap = {
         1: '東 (East) 1',
@@ -1032,7 +1072,6 @@
         let meldSection = '';
 
         if (state.handMode === 'standard') {
-            // Standard: 4 Melds + Pair. Melds 0-3 in 2x2 grid, Pair (index 4) full width below.
             let gridPairsHtml = '';
             let pairHtml = '';
 
@@ -1088,7 +1127,6 @@
                 <div>${pairHtml}</div>
             `;
         } else {
-            // Seven Pairs: Pair 1-4 top row (4 cols), Pair 5-7 bottom row (3 cols)[cite: 3]
             let topRowHtml = '';
             let bottomRowHtml = '';
 
@@ -1216,6 +1254,9 @@
     function renderPage5(content, footer) {
         const specials = [
             { id: 'none', label: 'Tidak Ada Kondisi Spesial', desc: 'Perhitungan standar' },
+            { id: 'pyongpi1', label: 'Pyong Pi Hitung 1', desc: 'Sisa joker, kartu apa pun yang diambil jadi kaki/pair (langsung dibuka setelah liu).<br>+5 Poin' },
+            { id: 'pyongpi4', label: 'Pyong Pi Hitung 4', desc: 'Dihitung sampai dengan putaran ke 4, di putaran 4 baru tambah poin, apabila dibatalkan sebelum putaran ke 4, tidak ditambahkan apapun.<br>+10 Poin' },
+            { id: 'pyongpi6', label: 'Pyong Pi Hitung 6', desc: 'Dihitung sampai dengan putaran ke 6, di putaran 6 baru tambah poin, apabila dibatalkan sebelum putaran ke 6, tidak ditambahkan apapun.<br>+30 Poin' },
             { id: 'paochin', label: 'Pao Chin', desc: 'Kurang 1 kartu sebelum Hu.<br>+20 dengan KIM / +30 tanpa KIM' },
             { id: 'sesampu', label: 'Se Sam Pu Tap (Thirteen Unconnected)', desc: 'Semua kartu tidak nyambung, tanpa kim.<br>+40 Poin' },
             { id: 'capsayauw', label: 'Cap Sa Yauw (Thirteen Orphans)', desc: '1, 9 wan/tong/sok + 7 honor.<br>+40 dengan KIM / +60 tanpa KIM' },
@@ -1341,13 +1382,13 @@
         const seatWindLabel = windNamesMap[state.seatWind] || '東 (East) 1';
         const prevalentWindLabel = windNamesMap[state.prevalentWind] || '東 (East) 1';
 
-        // STICKY HEADER for Total Nilai Kemenangan & title upwards (Rule 3)
         content.innerHTML = `
             <div class="sticky-result-header">
                 <div class="page-title" style="margin-bottom: 6px;">Hasil Perhitungan Score</div>
                 <div class="score-box">
                     <div style="font-size:0.75rem; font-weight:600; margin-bottom:2px;">TOTAL NILAI KEMENANGAN</div>
                     <div class="score-val">${evaluation.totalScore}</div>
+                    <div class="score-tay">Tay</div>
                 </div>
             </div>
 
@@ -1366,20 +1407,17 @@
             </div>
         `;
 
+        // Susunan footer halaman hasil: Tombol KEMBALI di paling kiri, SALIN di paling kanan
         footer.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
-                <div style="display:flex; gap:8px;">
-                    <button class="btn btn-next" onclick="copyToClipboard(${evaluation.totalScore})">📋 Simpan ke MEMORI</button>
-                    <button class="btn btn-danger" onclick="resetAll()">🔄 Hitung Lagi</button>
-                </div>
-                <button class="btn btn-back" onclick="navigateTo(5)">⬅️ Kembali</button>
-            </div>
+            <button class="btn btn-back" onclick="navigateTo(5)">⬅️ Kembali</button>
+            <button class="btn btn-danger" onclick="resetAll()">🔄 Ulang</button>
+            <button class="btn btn-next" onclick="copyToClipboard(${evaluation.totalScore})">📋 Salin</button>
         `;
     }
 
     function copyToClipboard(totalScore) {
         const evaluation = calculateScore();
-        let summary = `TOTAL NILAI = ${totalScore}\n`;
+        let summary = `TOTAL NILAI = ${totalScore} Tay\n`;
         evaluation.items.forEach(item => {
             summary += `- ${item.title} = +${item.pts}\n`;
         });
@@ -1556,7 +1594,7 @@
             items.push({ title: `KIM / Joker (${kimCount} kartu)`, pts: kimCount });
         } else {
             totalScore += 3;
-            items.push({ title: 'Tanpa KIM (Joker)', pts: 3 });
+            items.push({ title: 'Tidak ada KIM (Joker)', pts: 3 });
         }
 
         if (state.handMode === 'standard') {
@@ -1803,6 +1841,15 @@
             let pts = hasKim ? 40 : 60;
             totalScore += pts;
             items.push({ title: `Cap Sa Yauw (Thirteen Orphans) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
+        } else if (state.specialHand === 'pyongpi1') {
+            totalScore += 5;
+            items.push({ title: 'Pyong Pi Hitung 1', pts: 5 });
+        } else if (state.specialHand === 'pyongpi4') {
+            totalScore += 10;
+            items.push({ title: 'Pyong Pi Hitung 4', pts: 10 });
+        } else if (state.specialHand === 'pyongpi6') {
+            totalScore += 30;
+            items.push({ title: 'Pyong Pi Hitung 6', pts: 30 });
         } else if (state.specialHand === 'paochin') {
             let pts = hasKim ? 20 : 30;
             totalScore += pts;
