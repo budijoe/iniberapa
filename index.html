@@ -41,6 +41,16 @@
             color: var(--color-dark);
         }
 
+        /* Confetti Overlay Canvas */
+        #confettiCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 45;
+        }
+
         /* App Header */
         header {
             background-color: var(--color-green);
@@ -668,13 +678,32 @@
             padding: 12px;
             text-align: center;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+
+        .score-box:active {
+            transform: scale(0.985);
+        }
+
+        .score-box.celebrate-glow {
+            animation: boxGlowPulse 0.65s ease-out;
         }
 
         .score-box .score-val {
-            font-size: 2rem;
+            display: inline-block;
+            font-size: 2.15rem;
             font-weight: 800;
             color: var(--color-yellow);
             line-height: 1.1;
+            transform-origin: center center;
+            will-change: transform, opacity;
+        }
+
+        .score-box .score-val.score-pop-anim {
+            animation: scoreBurstPop 0.55s cubic-bezier(0.22, 1.35, 0.36, 1) forwards;
         }
 
         .score-box .score-tay {
@@ -682,6 +711,44 @@
             font-weight: 600;
             color: white;
             margin-top: 2px;
+        }
+
+        .score-replay-hint {
+            font-size: 0.62rem;
+            color: rgba(255, 255, 255, 0.65);
+            margin-top: 4px;
+            letter-spacing: 0.2px;
+        }
+
+        @keyframes scoreBurstPop {
+            0% {
+                transform: scale(0.75);
+                text-shadow: 0 0 0 rgba(214, 157, 46, 0);
+            }
+            42% {
+                transform: scale(1.34);
+                text-shadow: 0 0 18px rgba(255, 224, 102, 0.85);
+            }
+            70% {
+                transform: scale(0.94);
+                text-shadow: 0 0 8px rgba(214, 157, 46, 0.4);
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 0 rgba(214, 157, 46, 0);
+            }
+        }
+
+        @keyframes boxGlowPulse {
+            0% {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
+            35% {
+                box-shadow: 0 0 0 4px rgba(214, 157, 46, 0.45), 0 8px 18px rgba(8, 64, 60, 0.28);
+            }
+            100% {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
         }
 
         .breakdown-list {
@@ -837,6 +904,8 @@
 </head>
 <body>
 
+    <canvas id="confettiCanvas"></canvas>
+
     <header>
         <img src="https://raw.githubusercontent.com/budijoe/skor-mahjong/main/budijoe-pixel.svg" alt="budijoe" class="header-logo">
         <div class="header-text">
@@ -874,28 +943,233 @@
     <div id="toastMsg" class="toast-msg"></div>
 
 <script>
-    // Audio synthesizer untuk bunyi klik tombol
+    // Audio synthesizer untuk bunyi klik tombol & efek pop confetti
     let audioCtx = null;
+
+    function getAudioContext() {
+        if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) {
+                audioCtx = new AudioContextClass();
+            }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
+
     function playClickSound() {
         try {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(2800, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1400, audioCtx.currentTime + 0.02);
-            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
+            osc.frequency.setValueAtTime(2800, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.02);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.02);
             osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            gain.connect(ctx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.02);
+            osc.stop(ctx.currentTime + 0.02);
         } catch(e) {}
+    }
+
+    // Suara pop lembut (subtle pop + warm harmonic sparkle) saat angka akhir muncul & confetti meledak
+    function playSubtlePopSound() {
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            // 1. Soft bubble/cork pop (warm sine sweep)
+            const popOsc = ctx.createOscillator();
+            const popGain = ctx.createGain();
+            popOsc.type = 'sine';
+            popOsc.frequency.setValueAtTime(210, now);
+            popOsc.frequency.exponentialRampToValueAtTime(520, now + 0.045);
+            popOsc.frequency.exponentialRampToValueAtTime(320, now + 0.095);
+
+            popGain.gain.setValueAtTime(0.001, now);
+            popGain.gain.linearRampToValueAtTime(0.095, now + 0.012);
+            popGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.11);
+
+            popOsc.connect(popGain);
+            popGain.connect(ctx.destination);
+            popOsc.start(now);
+            popOsc.stop(now + 0.115);
+
+            // 2. Subtle delicate sparkle overtone (very low volume)
+            const chimeOsc = ctx.createOscillator();
+            const chimeGain = ctx.createGain();
+            chimeOsc.type = 'triangle';
+            chimeOsc.frequency.setValueAtTime(1046.5, now + 0.02); // C6
+            chimeOsc.frequency.exponentialRampToValueAtTime(1318.5, now + 0.08); // E6
+
+            chimeGain.gain.setValueAtTime(0.0005, now + 0.02);
+            chimeGain.gain.linearRampToValueAtTime(0.032, now + 0.035);
+            chimeGain.gain.exponentialRampToValueAtTime(0.0005, now + 0.24);
+
+            chimeOsc.connect(chimeGain);
+            chimeGain.connect(ctx.destination);
+            chimeOsc.start(now + 0.02);
+            chimeOsc.stop(now + 0.25);
+        } catch(e) {}
+    }
+
+    // Sistem partikel confetti yang meledak tepat dari koordinat elemen angka skor
+    let confettiParticles = [];
+    let confettiAnimFrame = null;
+    let scoreCounterFrame = null;
+
+    function launchConfettiFromElement(targetEl) {
+        const canvas = document.getElementById('confettiCanvas');
+        if (!canvas || !targetEl) return;
+
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        const rect = targetEl.getBoundingClientRect();
+        const originX = rect.left + rect.width / 2;
+        const originY = rect.top + rect.height / 2;
+
+        // Palet warna bertema Mahjong YDSP (emas, hijau giok, merah naga, putih gading)
+        const colors = ['#F6C344', '#FFE082', '#E53E3E', '#38A169', '#FFFFFF', '#D69D2E', '#68D391'];
+        const shapes = ['rect', 'circle', 'ribbon'];
+        const particleCount = 46;
+
+        for (let i = 0; i < particleCount; i++) {
+            const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.35;
+            const speed = 2.4 + Math.random() * 5.2;
+            confettiParticles.push({
+                x: originX + (Math.random() - 0.5) * 14,
+                y: originY + (Math.random() - 0.5) * 8,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 1.8, // Sedikit dorongan ke atas
+                gravity: 0.16 + Math.random() * 0.06,
+                drag: 0.965,
+                size: 4.5 + Math.random() * 4.5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                shape: shapes[Math.floor(Math.random() * shapes.length)],
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.24,
+                wobble: Math.random() * Math.PI * 2,
+                wobbleSpeed: 0.08 + Math.random() * 0.08,
+                alpha: 1,
+                decay: 0.013 + Math.random() * 0.008
+            });
+        }
+
+        if (!confettiAnimFrame) {
+            renderConfettiLoop();
+        }
+    }
+
+    function renderConfettiLoop() {
+        const canvas = document.getElementById('confettiCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = confettiParticles.length - 1; i >= 0; i--) {
+            const p = confettiParticles[i];
+            p.vx *= p.drag;
+            p.vy = p.vy * p.drag + p.gravity;
+            p.x += p.vx + Math.sin(p.wobble) * 0.45;
+            p.y += p.vy;
+            p.rotation += p.rotationSpeed;
+            p.wobble += p.wobbleSpeed;
+            p.alpha -= p.decay;
+
+            if (p.alpha <= 0 || p.y > height + 20) {
+                confettiParticles.splice(i, 1);
+                continue;
+            }
+
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation);
+            ctx.fillStyle = p.color;
+
+            if (p.shape === 'circle') {
+                ctx.beginPath();
+                ctx.arc(0, 0, p.size * 0.48, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (p.shape === 'ribbon') {
+                ctx.fillRect(-p.size * 0.7, -p.size * 0.25, p.size * 1.4, p.size * 0.5);
+            } else {
+                ctx.fillRect(-p.size * 0.45, -p.size * 0.45, p.size * 0.9, p.size * 0.9);
+            }
+            ctx.restore();
+        }
+
+        if (confettiParticles.length > 0) {
+            confettiAnimFrame = requestAnimationFrame(renderConfettiLoop);
+        } else {
+            confettiAnimFrame = null;
+            ctx.clearRect(0, 0, width, height);
+        }
+    }
+
+    // Animasi hitung angka + pop + confetti + suara pop
+    function triggerScoreCelebration(finalScore, instantPop = false) {
+        const scoreValEl = document.getElementById('finalScoreVal');
+        const scoreBoxEl = document.getElementById('finalScoreBox');
+        if (!scoreValEl) return;
+
+        if (scoreCounterFrame) {
+            cancelAnimationFrame(scoreCounterFrame);
+            scoreCounterFrame = null;
+        }
+
+        // Reset kelas animasi agar bisa diputar ulang
+        scoreValEl.classList.remove('score-pop-anim');
+        if (scoreBoxEl) scoreBoxEl.classList.remove('celebrate-glow');
+        void scoreValEl.offsetWidth; // Force reflow
+
+        const firePopAndConfetti = () => {
+            scoreValEl.innerText = finalScore;
+            scoreValEl.classList.add('score-pop-anim');
+            if (scoreBoxEl) scoreBoxEl.classList.add('celebrate-glow');
+            playSubtlePopSound();
+            launchConfettiFromElement(scoreValEl);
+        };
+
+        if (instantPop || finalScore <= 0) {
+            firePopAndConfetti();
+            return;
+        }
+
+        // Hitung cepat dari 0 ke nilai akhir (320ms), lalu meledak pop & confetti tepat di angka akhir
+        const duration = 320;
+        const startTime = performance.now();
+
+        function stepCount(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            // Ease-out cubic
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const currentVal = Math.round(eased * finalScore);
+            scoreValEl.innerText = currentVal;
+
+            if (progress < 1) {
+                scoreCounterFrame = requestAnimationFrame(stepCount);
+            } else {
+                scoreCounterFrame = null;
+                firePopAndConfetti();
+            }
+        }
+
+        scoreCounterFrame = requestAnimationFrame(stepCount);
     }
 
     // Global listener untuk klik tombol agar otomatis berbunyi klik
@@ -988,16 +1262,18 @@
     let activeSlotTarget = null;
 
     function saveState() {
-        localStorage.setItem('ydsp_app_state', JSON.stringify(state));
+        try {
+            localStorage.setItem('ydsp_app_state', JSON.stringify(state));
+        } catch(e) {}
     }
 
     function loadState() {
-        const saved = localStorage.getItem('ydsp_app_state');
-        if (saved) {
-            try {
+        try {
+            const saved = localStorage.getItem('ydsp_app_state');
+            if (saved) {
                 state = Object.assign(state, JSON.parse(saved));
-            } catch(e) {}
-        }
+            }
+        } catch(e) {}
     }
 
     function showToast(msg) {
@@ -1041,7 +1317,9 @@
     }
 
     function resetAll() {
-        localStorage.removeItem('ydsp_app_state');
+        try {
+            localStorage.removeItem('ydsp_app_state');
+        } catch(e) {}
         state = {
             currentPage: 1,
             seatWind: 1,
@@ -1558,10 +1836,11 @@
         content.innerHTML = `
             <div class="sticky-result-header">
                 <div class="page-title" style="margin-bottom: 6px;">Ini Hasil Perhitungan Budi</div>
-                <div class="score-box">
+                <div id="finalScoreBox" class="score-box" onclick="triggerScoreCelebration(${evaluation.totalScore}, true)" title="Ketuk untuk merayakan ulang">
                     <div style="font-size:0.75rem; font-weight:600; margin-bottom:2px;">TOTAL NILAI KEMENANGAN</div>
-                    <div class="score-val">${evaluation.totalScore}</div>
+                    <div id="finalScoreVal" class="score-val">0</div>
                     <div class="score-tay">Tay</div>
+                    <div class="score-replay-hint">✨ Ketuk kotak untuk efek ulang</div>
                 </div>
             </div>
 
@@ -1590,25 +1869,44 @@
             <button class="btn btn-danger" onclick="openResetModal()">↺ Ulang</button>
             <button class="btn btn-next" onclick="copyToClipboard(${evaluation.totalScore})">⧉ Salin</button>
         `;
+
+        // Picu animasi angka, pop, confetti, dan suara pop halus begitu halaman hasil dirender
+        requestAnimationFrame(() => {
+            triggerScoreCelebration(evaluation.totalScore, false);
+        });
     }
 
     function copyToClipboard(totalScore) {
         const evaluation = calculateScore();
-        let summary = `TOTAL NILAI = ${totalScore} Tay
-`;
+        let summary = `TOTAL NILAI = ${totalScore} Tay\n`;
         evaluation.items.forEach(item => {
-            summary += `- ${item.title} = +${item.pts}
-`;
+            summary += `- ${item.title} = +${item.pts}\n`;
         });
+
+        const fallbackCopy = (text) => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('Rincian nilai disalin ke Clipboard!');
+            } catch (err) {
+                showToast('Hasil nilai dicatat!');
+            }
+            document.body.removeChild(ta);
+        };
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(summary).then(() => {
                 showToast('Rincian nilai disalin ke Clipboard!');
             }).catch(() => {
-                showToast('Skor dicatat!');
+                fallbackCopy(summary);
             });
         } else {
-            showToast('Hasil nilai disalin!');
+            fallbackCopy(summary);
         }
     }
 
