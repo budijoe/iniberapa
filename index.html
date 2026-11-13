@@ -28,38 +28,17 @@
         }
 
         body {
-            background-color: #2d3748;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: var(--color-dark);
-        }
-
-        /* Phone Screen Frame */
-        .phone-container {
-            width: 100%;
-            max-width: 440px;
-            height: 100vh;
-            max-height: 900px;
             background-color: var(--bg-color);
             background-image: url('https://raw.githubusercontent.com/budijoe/iniberapa/main/mj-bg-03.png');
-            background-size: cover;       /* Membuat gambar memenuhi seluruh layar tanpa terdistorsi */
-            background-position: center;  /* Posisi gambar berada di tengah */
-            background-repeat: no-repeat; /* Mencegah gambar berulang/terduplikasi */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-            position: relative;
+            height: 100vh;
+            height: 100dvh;
             overflow: hidden;
-        }
-
-        @media (min-width: 480px) {
-            .phone-container {
-                height: 94vh;
-                border-radius: 28px;
-                border: 8px solid #1a202c;
-            }
+            color: var(--color-dark);
         }
 
         /* App Header */
@@ -67,29 +46,52 @@
             background-color: var(--color-green);
             color: white;
             padding: 14px 16px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            text-align: left;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             z-index: 10;
             flex-shrink: 0;
+        }
+
+        header .header-logo {
+            height: 2.4rem;
+            width: auto;
+            flex-shrink: 0;
+            object-fit: contain;
+        }
+
+        header .header-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
         }
 
         header h1 {
             font-size: 1.05rem;
             font-weight: 700;
             letter-spacing: 0.5px;
+            line-height: 1.2;
         }
 
         header p {
             font-size: 0.7rem;
             color: var(--color-yellow);
             margin-top: 2px;
+            line-height: 1.25;
         }
 
         /* Main View Container */
         .content {
             flex: 1;
+            width: 100%;
+            max-width: 560px;
+            margin: 0 auto;
             overflow-y: auto;
-            padding: 12px 14px;
+            padding: 14px 16px;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -608,6 +610,7 @@
             padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px));
             display: flex;
             flex-direction: row;
+            justify-content: center;
             gap: 8px;
             z-index: 10;
             flex-shrink: 0;
@@ -615,7 +618,7 @@
 
         footer > .btn {
             flex: 1;
-            width: auto;
+            max-width: 260px;
         }
 
         .btn {
@@ -712,7 +715,7 @@
 
         /* Custom Confirmation Modal */
         .modal-overlay {
-            position: absolute;
+            position: fixed;
             inset: 0;
             background: rgba(26, 32, 44, 0.65);
             backdrop-filter: blur(2px);
@@ -834,10 +837,12 @@
 </head>
 <body>
 
-<div class="phone-container">
     <header>
-        <h1>🀄 BUDI, INI BERAPA?</h1>
-        <p>Aplikasi Otomatis untuk Menghitung Nilai Mahjong dengan Sistem Bandung YDSP — by budijoe</p>
+        <img src="https://raw.githubusercontent.com/budijoe/skor-mahjong/main/budijoe-pixel.svg" alt="budijoe" class="header-logo">
+        <div class="header-text">
+            <h1>BUDI, INI BERAPA?</h1>
+            <p>Aplikasi Otomatis untuk Menghitung Nilai Mahjong dengan Sistem Bandung YDSP — by budijoe</p>
+        </div>
     </header>
 
     <main class="content" id="appContent">
@@ -865,9 +870,8 @@
             </div>
         </div>
     </div>
-</div>
 
-<div id="toastMsg" class="toast-msg"></div>
+    <div id="toastMsg" class="toast-msg"></div>
 
 <script>
     // Audio synthesizer untuk bunyi klik tombol
@@ -1586,9 +1590,11 @@
 
     function copyToClipboard(totalScore) {
         const evaluation = calculateScore();
-        let summary = `TOTAL NILAI = ${totalScore} Tay\n`;
+        let summary = `TOTAL NILAI = ${totalScore} Tay
+`;
         evaluation.items.forEach(item => {
-            summary += `- ${item.title} = +${item.pts}\n`;
+            summary += `- ${item.title} = +${item.pts}
+`;
         });
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
