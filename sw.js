@@ -3,20 +3,22 @@ var APP_PREFIX = 'bib_';
 var VERSION = 'version_01';
 var CACHE_NAME = APP_PREFIX + VERSION;
 
-var SVG_MASTER = 'https://raw.githubusercontent.com/budijoe/skor-mahjong/main/';
+var RAW_BASE = 'https://raw.githubusercontent.com/budijoe/';
+var SVG_MASTER = RAW_BASE + 'skor-mahjong/main/';
+var BG_IMAGE = RAW_BASE + 'iniberapa/main/mj-bg-03.png';
 
-// 1. Aset utama dari repo iniberapa (wajib berhasil di-cache saat install)
+// 1. Aset lokal utama dari repo iniberapa (wajib berhasil di-cache saat install)
 var CORE_URLS = [
   `${GHPATH}/`,
   `${GHPATH}/index.html`,
   `${GHPATH}/manifest.webmanifest`,
   `${GHPATH}/icon-192.png`,
-  `${GHPATH}/icon-512.png`,
-  `${GHPATH}/mj-bg-03.png`
+  `${GHPATH}/icon-512.png`
 ];
 
-// 2. Aset SVG dari repo skor-mahjong
-var EXTERNAL_SVGS = [
+// 2. Aset eksternal dari raw.githubusercontent.com (background & semua SVG)
+var EXTERNAL_ASSETS = [
+  BG_IMAGE,
   SVG_MASTER + 'budijoe-pixel.svg',
   SVG_MASTER + 'svg/01-white-dragon.svg',
   SVG_MASTER + 'svg/02-green-dragon.svg',
@@ -66,8 +68,7 @@ var EXTERNAL_SVGS = [
 self.addEventListener('install', function (e) {
   e.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      // Cache aset eksternal di latar belakang tanpa menggagalkan install jika jaringan lambat
-      EXTERNAL_SVGS.forEach(function (url) {
+      EXTERNAL_ASSETS.forEach(function (url) {
         cache.add(url).catch(function () {});
       });
       return cache.addAll(CORE_URLS);
@@ -98,8 +99,7 @@ self.addEventListener('fetch', function (e) {
         return cachedResponse;
       }
       return fetch(e.request).then(function (networkResponse) {
-        // Simpan otomatis ke cache jika aset eksternal baru diakses
-        if (e.request.url.startsWith(SVG_MASTER)) {
+        if (e.request.url.startsWith(RAW_BASE)) {
           var responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then(function (cache) {
             cache.put(e.request, responseClone);
