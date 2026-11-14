@@ -1,6 +1,6 @@
 var GHPATH = '/iniberapa';
 var APP_PREFIX = 'bib_';
-var VERSION = 'version_01';
+var VERSION = 'version_02';
 var CACHE_NAME = APP_PREFIX + VERSION;
 
 var RAW_BASE = 'https://raw.githubusercontent.com/budijoe/';
