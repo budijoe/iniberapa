@@ -188,6 +188,73 @@
             box-shadow: 0 0 0 1px var(--color-green);
         }
 
+        /* Minimal Tay Stepper Control (Page 1) */
+        .min-tay-section {
+            margin-top: 26px;
+            padding-top: 16px;
+            border-top: 1px dashed #cbd5e0;
+        }
+
+        .min-tay-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--color-green);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .min-tay-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background: white;
+            border: 2px solid #cbd5e0;
+            border-radius: 14px;
+            padding: 10px 18px;
+            max-width: 280px;
+            margin: 0 auto;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .min-tay-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: 2px solid var(--color-green);
+            background-color: var(--color-green-light);
+            color: var(--color-green);
+            font-size: 1.05rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.12s ease;
+            user-select: none;
+        }
+
+        .min-tay-btn:active {
+            transform: scale(0.93);
+            background-color: var(--color-green);
+            color: white;
+        }
+
+        .min-tay-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .min-tay-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--color-green);
+            min-width: 54px;
+            text-align: center;
+            line-height: 1;
+        }
+
         /* Radio Options Card */
         .option-card {
             background: white;
@@ -671,10 +738,11 @@
             color: white;
         }
 
-        /* Result Breakdown */
+        /* Result Breakdown & Score Box */
         .score-box {
             background: var(--color-green);
             color: white;
+            border: 2px solid transparent;
             border-radius: 12px;
             padding: 12px;
             text-align: center;
@@ -682,7 +750,7 @@
             cursor: pointer;
             user-select: none;
             position: relative;
-            transition: transform 0.15s ease, box-shadow 0.2s ease;
+            transition: background-color 0.35s ease, border-color 0.35s ease, transform 0.15s ease, box-shadow 0.25s ease;
         }
 
         .score-box:active {
@@ -693,6 +761,17 @@
             animation: boxGlowPulse 0.65s ease-out;
         }
 
+        /* State saat nilai < Minimal Hu (Gentle Rejection) */
+        .score-box.insufficient-score {
+            background: #742A2A;
+            border-color: #FC8181;
+            box-shadow: 0 4px 12px rgba(197, 48, 48, 0.28);
+        }
+
+        .score-box.insufficient-score .score-val {
+            color: #FEB2B2;
+        }
+
         .score-box .score-val {
             display: inline-block;
             font-size: 2.15rem;
@@ -701,10 +780,15 @@
             line-height: 1.1;
             transform-origin: center center;
             will-change: transform, opacity;
+            transition: color 0.3s ease;
         }
 
         .score-box .score-val.score-pop-anim {
             animation: scoreBurstPop 0.55s cubic-bezier(0.22, 1.35, 0.36, 1) forwards;
+        }
+
+        .score-box .score-val.score-shake-anim {
+            animation: scoreSubtleShake 0.38s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
         }
 
         .score-box .score-tay {
@@ -712,6 +796,25 @@
             font-weight: 600;
             color: white;
             margin-top: 2px;
+        }
+
+        .insufficient-badge {
+            display: none;
+            margin: 6px auto 2px auto;
+            padding: 4px 10px;
+            background-color: rgba(26, 32, 44, 0.55);
+            border: 1px solid #FEB2B2;
+            color: #FFF5F5;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            border-radius: 999px;
+            width: fit-content;
+        }
+
+        .insufficient-badge.visible {
+            display: inline-block;
+            animation: badgeStampIn 0.26s cubic-bezier(0.2, 1.25, 0.4, 1) forwards;
         }
 
         .score-replay-hint {
@@ -737,6 +840,25 @@
             100% {
                 transform: scale(1);
                 text-shadow: 0 0 0 rgba(214, 157, 46, 0);
+            }
+        }
+
+        @keyframes scoreSubtleShake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-5px); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
+        }
+
+        @keyframes badgeStampIn {
+            0% {
+                opacity: 0;
+                transform: scale(1.14);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
             }
         }
 
@@ -944,7 +1066,7 @@
     <div id="toastMsg" class="toast-msg"></div>
 
 <script>
-    // Audio synthesizer untuk bunyi klik tombol & efek pop confetti
+    // Audio synthesizer untuk bunyi klik tombol, efek pop confetti, dan ketukan kayu saat skor kurang
     let audioCtx = null;
 
     function getAudioContext() {
@@ -978,14 +1100,13 @@
         } catch(e) {}
     }
 
-    // Suara pop lembut (subtle pop + warm harmonic sparkle) saat angka akhir muncul & confetti meledak
+    // Suara pop lembut (subtle pop + warm harmonic sparkle) saat nilai cukup untuk Hu
     function playSubtlePopSound() {
         try {
             const ctx = getAudioContext();
             if (!ctx) return;
             const now = ctx.currentTime;
 
-            // 1. Soft bubble/cork pop (warm sine sweep)
             const popOsc = ctx.createOscillator();
             const popGain = ctx.createGain();
             popOsc.type = 'sine';
@@ -1002,12 +1123,11 @@
             popOsc.start(now);
             popOsc.stop(now + 0.115);
 
-            // 2. Subtle delicate sparkle overtone (very low volume)
             const chimeOsc = ctx.createOscillator();
             const chimeGain = ctx.createGain();
             chimeOsc.type = 'triangle';
-            chimeOsc.frequency.setValueAtTime(1046.5, now + 0.02); // C6
-            chimeOsc.frequency.exponentialRampToValueAtTime(1318.5, now + 0.08); // E6
+            chimeOsc.frequency.setValueAtTime(1046.5, now + 0.02);
+            chimeOsc.frequency.exponentialRampToValueAtTime(1318.5, now + 0.08);
 
             chimeGain.gain.setValueAtTime(0.0005, now + 0.02);
             chimeGain.gain.linearRampToValueAtTime(0.032, now + 0.035);
@@ -1017,6 +1137,36 @@
             chimeGain.connect(ctx.destination);
             chimeOsc.start(now + 0.02);
             chimeOsc.stop(now + 0.25);
+        } catch(e) {}
+    }
+
+    // Suara dua ketukan kayu lembut bernada turun (soft descending wood-knock) saat nilai < minimal Hu
+    function playInsufficientKnockSound() {
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            const triggerKnock = (startTime, startFreq, endFreq) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(startFreq, startTime);
+                osc.frequency.exponentialRampToValueAtTime(endFreq, startTime + 0.055);
+
+                gain.gain.setValueAtTime(0.001, startTime);
+                gain.gain.linearRampToValueAtTime(0.085, startTime + 0.008);
+                gain.gain.exponentialRampToValueAtTime(0.0008, startTime + 0.075);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(startTime);
+                osc.stop(startTime + 0.08);
+            };
+
+            // Ketukan 1 (~265Hz -> 185Hz), jeda 95ms, Ketukan 2 turun (~205Hz -> 140Hz)
+            triggerKnock(now, 265, 185);
+            triggerKnock(now + 0.095, 205, 140);
         } catch(e) {}
     }
 
@@ -1039,7 +1189,6 @@
         const originX = rect.left + rect.width / 2;
         const originY = rect.top + rect.height / 2;
 
-        // Palet warna bertema Mahjong YDSP (emas, hijau giok, merah naga, putih gading)
         const colors = ['#F6C344', '#FFE082', '#E53E3E', '#38A169', '#FFFFFF', '#D69D2E', '#68D391'];
         const shapes = ['rect', 'circle', 'ribbon'];
         const particleCount = 46;
@@ -1051,7 +1200,7 @@
                 x: originX + (Math.random() - 0.5) * 14,
                 y: originY + (Math.random() - 0.5) * 8,
                 vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed - 1.8, // Sedikit dorongan ke atas
+                vy: Math.sin(angle) * speed - 1.8,
                 gravity: 0.16 + Math.random() * 0.06,
                 drag: 0.965,
                 size: 4.5 + Math.random() * 4.5,
@@ -1121,10 +1270,12 @@
         }
     }
 
-    // Animasi hitung angka + pop + confetti + suara pop
-    function triggerScoreCelebration(finalScore, instantPop = false) {
+    // Evaluasi akhir skor: Celebration jika >= minTayToHu, Gentle Rejection jika < minTayToHu
+    function triggerScoreEvaluationFeedback(finalScore, instantReplay = false) {
         const scoreValEl = document.getElementById('finalScoreVal');
         const scoreBoxEl = document.getElementById('finalScoreBox');
+        const badgeEl = document.getElementById('insufficientBadge');
+        const hintEl = document.getElementById('scoreReplayHint');
         if (!scoreValEl) return;
 
         if (scoreCounterFrame) {
@@ -1132,32 +1283,65 @@
             scoreCounterFrame = null;
         }
 
-        // Reset kelas animasi agar bisa diputar ulang
-        scoreValEl.classList.remove('score-pop-anim');
-        if (scoreBoxEl) scoreBoxEl.classList.remove('celebrate-glow');
+        const minReq = Number(state.minTayToHu) || 5;
+        const isInsufficient = finalScore < minReq;
+
+        // Reset animasi & state visual
+        scoreValEl.classList.remove('score-pop-anim', 'score-shake-anim');
+        if (scoreBoxEl) {
+            scoreBoxEl.classList.remove('celebrate-glow');
+            if (!instantReplay) {
+                scoreBoxEl.classList.remove('insufficient-score');
+            }
+        }
+        if (badgeEl && !instantReplay) {
+            badgeEl.classList.remove('visible');
+        }
         void scoreValEl.offsetWidth; // Force reflow
 
-        const firePopAndConfetti = () => {
+        const applyFinalFeedback = () => {
             scoreValEl.innerText = finalScore;
-            scoreValEl.classList.add('score-pop-anim');
-            if (scoreBoxEl) scoreBoxEl.classList.add('celebrate-glow');
-            playSubtlePopSound();
-            launchConfettiFromElement(scoreValEl);
+            void scoreValEl.offsetWidth;
+
+            if (isInsufficient) {
+                if (scoreBoxEl) scoreBoxEl.classList.add('insufficient-score');
+                if (badgeEl) {
+                    badgeEl.innerText = `⛔ KURANG DARI ${minReq} TAY — TIDAK BOLEH HU`;
+                    badgeEl.classList.remove('visible');
+                    void badgeEl.offsetWidth;
+                    badgeEl.classList.add('visible');
+                }
+                if (hintEl) {
+                    hintEl.innerText = `Minimum ${minReq} Tay untuk sah Hu`;
+                }
+                scoreValEl.classList.add('score-shake-anim');
+                playInsufficientKnockSound();
+            } else {
+                if (scoreBoxEl) {
+                    scoreBoxEl.classList.remove('insufficient-score');
+                    scoreBoxEl.classList.add('celebrate-glow');
+                }
+                if (badgeEl) badgeEl.classList.remove('visible');
+                if (hintEl) {
+                    hintEl.innerText = `✨ Ketuk kotak untuk efek ulang`;
+                }
+                scoreValEl.classList.add('score-pop-anim');
+                playSubtlePopSound();
+                launchConfettiFromElement(scoreValEl);
+            }
         };
 
-        if (instantPop || finalScore <= 0) {
-            firePopAndConfetti();
+        if (instantReplay || finalScore <= 0) {
+            applyFinalFeedback();
             return;
         }
 
-        // Hitung cepat dari 0 ke nilai akhir (320ms), lalu meledak pop & confetti tepat di angka akhir
         const duration = 320;
         const startTime = performance.now();
 
         function stepCount(now) {
             const elapsed = now - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            // Ease-out cubic
             const eased = 1 - Math.pow(1 - progress, 3);
             const currentVal = Math.round(eased * finalScore);
             scoreValEl.innerText = currentVal;
@@ -1166,7 +1350,7 @@
                 scoreCounterFrame = requestAnimationFrame(stepCount);
             } else {
                 scoreCounterFrame = null;
-                firePopAndConfetti();
+                applyFinalFeedback();
             }
         }
 
@@ -1175,7 +1359,7 @@
 
     // Global listener untuk klik tombol agar otomatis berbunyi klik
     document.addEventListener('click', function(e) {
-        const target = e.target.closest('button, .wind-btn, .option-card, .tile-card, .tab-btn, .open-toggle, .tile-slot, .picker-item, .btn-clear-all');
+        const target = e.target.closest('button, .wind-btn, .option-card, .tile-card, .tab-btn, .open-toggle, .tile-slot, .picker-item, .btn-clear-all, .min-tay-btn');
         if (target) {
             playClickSound();
         }
@@ -1239,10 +1423,13 @@
         4: '北 (North) 4'
     };
 
+    const PERSISTENT_PREFS_KEY = 'ydsp_persistent_prefs';
+
     let state = {
         currentPage: 1,
         seatWind: 1,
         prevalentWind: 1,
+        minTayToHu: 5,
         winWay: 'buangan',
         selectedFlowers: [],
         handMode: 'standard',
@@ -1262,9 +1449,35 @@
 
     let activeSlotTarget = null;
 
+    // Simpan preferensi persistent (Angin Duduk, Angin Meja, Minimal Tay untuk Hu) secara terpisah
+    function savePersistentPrefs() {
+        try {
+            localStorage.setItem(PERSISTENT_PREFS_KEY, JSON.stringify({
+                seatWind: state.seatWind,
+                prevalentWind: state.prevalentWind,
+                minTayToHu: state.minTayToHu
+            }));
+        } catch(e) {}
+    }
+
+    function loadPersistentPrefs() {
+        try {
+            const prefsRaw = localStorage.getItem(PERSISTENT_PREFS_KEY);
+            if (prefsRaw) {
+                const prefs = JSON.parse(prefsRaw);
+                if ([1, 2, 3, 4].includes(prefs.seatWind)) state.seatWind = prefs.seatWind;
+                if ([1, 2, 3, 4].includes(prefs.prevalentWind)) state.prevalentWind = prefs.prevalentWind;
+                if (typeof prefs.minTayToHu === 'number' && prefs.minTayToHu >= 1) {
+                    state.minTayToHu = prefs.minTayToHu;
+                }
+            }
+        } catch(e) {}
+    }
+
     function saveState() {
         try {
             localStorage.setItem('ydsp_app_state', JSON.stringify(state));
+            savePersistentPrefs();
         } catch(e) {}
     }
 
@@ -1275,6 +1488,7 @@
                 state = Object.assign(state, JSON.parse(saved));
             }
         } catch(e) {}
+        loadPersistentPrefs();
     }
 
     function showToast(msg) {
@@ -1318,13 +1532,20 @@
     }
 
     function resetAll() {
+        // Pertahankan pilihan Angin Duduk, Angin Meja, dan Minimal Tay untuk Hu milik user
+        const preservedSeatWind = state.seatWind;
+        const preservedPrevalentWind = state.prevalentWind;
+        const preservedMinTayToHu = state.minTayToHu;
+
         try {
             localStorage.removeItem('ydsp_app_state');
         } catch(e) {}
+
         state = {
             currentPage: 1,
-            seatWind: 1,
-            prevalentWind: 1,
+            seatWind: preservedSeatWind,
+            prevalentWind: preservedPrevalentWind,
+            minTayToHu: preservedMinTayToHu,
             winWay: 'buangan',
             selectedFlowers: [],
             handMode: 'standard',
@@ -1342,6 +1563,7 @@
             specialHand: 'none'
         };
         activeSlotTarget = null;
+        savePersistentPrefs();
         navigateTo(1);
     }
 
@@ -1405,6 +1627,8 @@
             </button>
         `).join('');
 
+        const minTay = Number(state.minTayToHu) || 5;
+
         content.innerHTML = `
             <div class="page-title">1. Angin Duduk & Angin Meja</div>
             <div class="page-subtitle">Pilih posisi Angin Duduk (Seat Wind) dan Angin Meja (Prevalent Wind) Pemenang:</div>
@@ -1417,6 +1641,15 @@
             <div class="form-group" style="margin-top: 14px;">
                 <label>Angin Meja (Prevalent Wind):</label>
                 <div class="wind-grid">${prevalentBtnsHtml}</div>
+            </div>
+
+            <div class="min-tay-section">
+                <div class="min-tay-label">Minimal Tay untuk Hu</div>
+                <div class="min-tay-control">
+                    <button type="button" class="min-tay-btn" onclick="adjustMinTay(-1)" ${minTay <= 1 ? 'disabled' : ''} aria-label="Kurangi minimal Tay">-1</button>
+                    <div class="min-tay-value" id="minTayDisplay">${minTay}</div>
+                    <button type="button" class="min-tay-btn" onclick="adjustMinTay(1)" aria-label="Tambah minimal Tay">+1</button>
+                </div>
             </div>
         `;
 
@@ -1431,6 +1664,14 @@
 
     function setPrevalentWind(val) {
         state.prevalentWind = val;
+        saveState();
+        render();
+    }
+
+    function adjustMinTay(delta) {
+        const current = Number(state.minTayToHu) || 5;
+        const nextVal = Math.max(1, current + delta);
+        state.minTayToHu = nextVal;
         saveState();
         render();
     }
@@ -1746,6 +1987,7 @@
 
     function renderPage6(content, footer) {
         const evaluation = calculateScore();
+        const minReq = Number(state.minTayToHu) || 5;
 
         let breakdownItems = evaluation.items.map(item => `
             <div class="breakdown-item ${item.pts === 0 ? 'batal' : ''}">
@@ -1757,12 +1999,15 @@
         let flowersVisualHtml = '';
         if (state.selectedFlowers.length > 0) {
             const sortedFlowers = flowerTiles.filter(f => state.selectedFlowers.includes(f.id));
-            let flowerCardsHtml = sortedFlowers.map(fl => `
-                <div class="visual-flower-card">
-                    <img src="${fl.img}" alt="${fl.name}">
-                    <span>${fl.name}</span>
-                </div>
-            `).join('');
+            let flowerCardsHtml = sortedFlowers.map(fl => {
+                const isRedFlower = fl.code.startsWith('red');
+                return `
+                    <div class="visual-flower-card">
+                        <img src="${fl.img}" alt="${fl.name}">
+                        <span style="${isRedFlower ? 'color: var(--color-red);' : ''}">${fl.name}</span>
+                    </div>
+                `;
+            }).join('');
 
             flowersVisualHtml = `
                 <div class="visual-section-title">
@@ -1835,11 +2080,12 @@
         content.innerHTML = `
             <div class="sticky-result-header">
                 <div class="page-title" style="margin-bottom: 6px;">Ini Hasil Perhitungan Budi</div>
-                <div id="finalScoreBox" class="score-box" onclick="triggerScoreCelebration(${evaluation.totalScore}, true)" title="Ketuk untuk merayakan ulang">
+                <div id="finalScoreBox" class="score-box" onclick="triggerScoreEvaluationFeedback(${evaluation.totalScore}, true)" title="Ketuk untuk memutar ulang efek">
                     <div style="font-size:0.75rem; font-weight:600; margin-bottom:2px;">TOTAL NILAI KEMENANGAN</div>
                     <div id="finalScoreVal" class="score-val">0</div>
                     <div class="score-tay">Tay</div>
-                    <div class="score-replay-hint">✨ Ketuk kotak untuk efek ulang</div>
+                    <div><span id="insufficientBadge" class="insufficient-badge">⛔ KURANG DARI ${minReq} TAY — TIDAK BOLEH HU</span></div>
+                    <div id="scoreReplayHint" class="score-replay-hint">✨ Ketuk kotak untuk efek ulang</div>
                 </div>
             </div>
 
@@ -1869,17 +2115,21 @@
             <button class="btn btn-next" onclick="copyToClipboard(${evaluation.totalScore})">⧉ Salin</button>
         `;
 
-        // Picu animasi angka, pop, confetti, dan suara pop halus begitu halaman hasil dirender
+        // Picu evaluasi animasi & audio (celebration jika >= minTayToHu, gentle rejection jika < minTayToHu)
         requestAnimationFrame(() => {
-            triggerScoreCelebration(evaluation.totalScore, false);
+            triggerScoreEvaluationFeedback(evaluation.totalScore, false);
         });
     }
 
     function copyToClipboard(totalScore) {
         const evaluation = calculateScore();
-        let summary = `TOTAL NILAI = ${totalScore} Tay\n`;
+        const minReq = Number(state.minTayToHu) || 5;
+        const statusSuffix = totalScore < minReq ? ` (TIDAK SAH HU — Kurang dari ${minReq} Tay)` : '';
+        let summary = `TOTAL NILAI = ${totalScore} Tay${statusSuffix}
+`;
         evaluation.items.forEach(item => {
-            summary += `- ${item.title} = +${item.pts}\n`;
+            summary += `- ${item.title} = +${item.pts}
+`;
         });
 
         const fallbackCopy = (text) => {
@@ -2223,7 +2473,6 @@
                 }
             }
 
-            // Pemeriksaan Kartu Naga (Siau San Yen & Ta San Yen) dan Kartu Angin (Siau Se Si & Ta Se Si)
             const dragonIds = ['cung', 'fat', 'pai'];
             const windIds = ['tung', 'nan', 'si', 'pei'];
 
@@ -2247,7 +2496,6 @@
                 }
             }
 
-            // Pemeriksaan Kartu Naga
             let dragonTripletCount = dragonIds.filter(d => tripletTargets.has(d)).length;
             let dragonHasPair = pairTarget && dragonIds.includes(pairTarget) && !tripletTargets.has(pairTarget);
 
@@ -2261,7 +2509,6 @@
                 items.push({ title: `Siau San Yen (Small Three Dragons) ${hasKim ? 'dengan KIM' : 'tanpa KIM'}`, pts: pts });
             }
 
-            // Pemeriksaan Kartu Angin
             let windTripletCount = windIds.filter(w => tripletTargets.has(w)).length;
             let windHasPair = pairTarget && windIds.includes(pairTarget) && !tripletTargets.has(pairTarget);
 
