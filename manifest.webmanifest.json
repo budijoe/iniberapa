@@ -1,0 +1,26 @@
+{
+  "name": "Budi, ini berapa?",
+  "short_name": "Ini Berapa?",
+  "description": "Aplikasi menghitung tangan Hu secara otomatis.",
+  "id": "/iniberapa/",
+  "scope": "/iniberapa/",
+  "start_url": "/iniberapa/",
+  "background_color": "#F9F5F1",
+  "theme_color": "#084413",
+  "display": "standalone",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/iniberapa/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/iniberapa/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    }
+  ]
+}
